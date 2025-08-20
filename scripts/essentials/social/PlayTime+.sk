@@ -1,0 +1,88 @@
+# Edited version
+
+options:
+    
+    Require Permission To Use Command: false 
+    # If ^ is true, please specifiy a permission below:
+
+    Permission To Use Command: playtime.command  
+    Permission Message: &cYou don't have permission to use this! (<permission>)
+
+    Command Message: &b&l(!) &b<user>'s &fplaytime is: &b<days>d&f, &b<hours>h&f, &b<minutes>m&f, &b<seconds>s&f!
+    # Use <user> for the User's name 
+    # Use <days> for Playtime Days
+    # Use <hours> for Playtime Hours
+    # Use <minutes> for Playtime Minutes
+    # Use <seconds> for Playtime Seconds  
+
+on load:
+	send "&7[&bPlayTime+&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bPlayTime+&7] &8» &cDisabled" to console
+
+on join:
+    while player is online:
+        add 1 to {seconds::%player's uuid%} 
+        if {seconds::%player's uuid%} is 60:
+            remove 60 from {seconds::%player's uuid%} 
+            add 1 to {minutes::%player's uuid%} 
+        if {minutes::%player's uuid%} is 60:
+            remove 60 from {minutes::%player's uuid%} 
+            add 1 to {hours::%player's uuid%} 
+        if {hours::%player's uuid%} is 24:
+            remove 24 from {hours::%player's uuid%} 
+            add 1 to {days::%player's uuid%} 
+        
+        wait 1 second 
+
+on join:
+    set {seconds::%player's uuid%} to 0 if {seconds::%player's uuid%} is not set 
+
+command /playtime [<offlineplayer>] [<string>]:
+    usage: &cPlease use /playtime <user name>
+    trigger:
+        if {@Require Permission To Use Command} is false:
+            if arg-1 is not set:
+                set {_n} to "{@Command Message}"
+                replace all "<user>" with "%player%" in {_n}
+                replace all "<days>" with "%{days::%player's uuid%} ? 0%" in {_n}
+                replace all "<hours>" with "%{hours::%player's uuid%} ? 0%" in {_n}
+                replace all "<minutes>" with "%{minutes::%player's uuid%} ? 0%" in {_n}
+                replace all "<seconds>" with "%{seconds::%player's uuid%} ? 0%" in {_n}
+                send "%{_n}%" to player
+            else:
+                set {_m} to "{@Command Message}"
+                replace all "<user>" with "%arg-1%" in {_m}
+                replace all "<days>" with "%{days::%arg-1's uuid%} ? 0%" in {_m}
+                replace all "<hours>" with "%{hours::%arg-1's uuid%} ? 0%" in {_m}
+                replace all "<minutes>" with "%{minutes::%arg-1's uuid%} ? 0%" in {_m}
+                replace all "<seconds>" with "%{seconds::%arg-1's uuid%} ? 0%" in {_m}
+                send "%{_m}%" to player
+
+        else:
+            if player has permission "{@Permission To Use Command}":
+            
+                if arg-1 is not set:
+                    set {_e} to "{@Command Message}"
+                    replace all "<user>" with "%player%" in {_e}
+                    replace all "<days>" with "%{days::%player's uuid%} ? 0%" in {_e}
+                    replace all "<hours>" with "%{hours::%player's uuid%} ? 0%" in {_e}
+                    replace all "<minutes>" with "%{minutes::%player's uuid%} ? 0%" in {_e}
+                    replace all "<seconds>" with "%{seconds::%player's uuid%} ? 0%" in {_e}
+                    send "%{_e}%" to player
+
+                else:
+                    set {_b} to "{@Command Message}"
+                    replace all "<user>" with "%arg-1%" in {_b}
+                    replace all "<days>" with "%{days::%arg-1's uuid%} ? 0%" in {_b}
+                    replace all "<hours>" with "%{hours::%arg-1's uuid%} ? 0%" in {_b}
+                    replace all "<minutes>" with "%{minutes::%arg-1's uuid%} ? 0%" in {_b}
+                    replace all "<seconds>" with "%{seconds::%arg-1's uuid%} ? 0%" in {_b}
+                    send "%{_b}%" to player
+
+            else:
+                set {_permission} to "{@Permission Message}"
+                replace all "<permission>" with "{@Permission To Use Command}" in {_permission} 
+
+                send "%{_permission}%" to player

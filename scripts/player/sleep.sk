@@ -1,0 +1,53 @@
+# SleepVote
+# https://www.spigotmc.org/resources/skript-sleepvote.13541/
+# Fixed version
+
+import:
+	org.bukkit.event.world.TimeSkipEvent
+
+options:
+	Prefix: &f[&9Tiny Sleep&f]	
+
+variables:
+	{sleepcount} = 0
+	
+on load:
+	send "{@Prefix} &8» &2Enabled" to console
+	set {sleepcount} to 0
+
+on unload:
+	send "{@Prefix} &8» &cDisabled" to console
+
+on player enter a bed:
+	if number of all players is greater than 1:
+		add 1 to {sleepcount}
+		wait 1 tick
+		sendActionBar(player, "&6You're now sleeping. (&f%{sleepcount}/number of all players/2*100%%% of users are sleeping.&6)")
+		if {sleepcount} is higher than number of all players/2:
+			set {allow_skip_time} to true
+			wait 2 seconds
+			set time in world to 06:00
+			set {sleepcount} to 0
+			clear {allow_skip_time}
+		if {sleepcount} is equal to number of all players/2:
+			set {allow_skip_time} to true
+			wait 2 seconds
+			set time in world to 06:00
+			set {sleepcount} to 0
+			clear {allow_skip_time}
+	else:
+		wait 1 tick
+		sendActionBar(player, "&6You're now sleeping. Only you are playing. So time to fast forward the day.")
+		set {allow_skip_time} to true
+		wait 2 seconds
+		set time in world to 06:00
+		set {sleepcount} to 0
+		clear {allow_skip_time}
+	
+on player leave a bed:
+	if number of all players is greater than 1:
+		remove 1 from {sleepcount}
+
+on TimeSkipEvent:
+	{allow_skip_time} is not true:
+		event.setCancelled(true)

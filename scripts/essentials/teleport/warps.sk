@@ -1,0 +1,67 @@
+# Edited version
+
+on load:
+	send "&7[&bWarps&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bWarps&7] &8» &cDisabled" to console
+
+command /setwarp [<text>]:
+	permission: warps.setwarp
+	trigger:
+		if arg 1 is not set:
+			send "&b&lWARPS &8▏ &fSpecifies the name of the warp."
+		else:
+			send "&aWarp position %arg 1% was established in:"
+			send "&7%location of player%"
+			wait 1 tick
+			set {warp_%arg 1%} to location of player
+
+command /delwarp [<text>]:
+	permission: warps.delwarp
+	trigger:
+		if arg 1 is not set:
+			send "&b&lWARPS &8▏ &fSpecifies the name of the warp."
+		else:
+			if {warp_%arg 1%} is not set:
+				send "&b&lWARPS &8▏ &fEspecifica el nombre de un warp."
+			else:
+				send "&aWarp %arg 1% eliminado."
+				wait 1 tick
+				clear {warp_%arg 1%}
+
+command /warp [<text>]:
+	usage: /warp [warp]
+	permission: warps.use
+	cooldown: 3 seconds
+	trigger:
+		if arg 1 is not set:
+			send "" to player
+			send "&e&lAbstract &f&lNetwork" to player
+			send "&7Warp List" to player
+			send "" to player
+			send "&Use &a/warp <name>&7 to teleport to a warp." to player
+		else:
+			if {warp_%arg 1%} is not set:
+				send "&b&lWARPS &8▏ &The warp does not exist." to player
+			else:
+				send "&7Teleporting, no move, wait &e3 seconds&7..." to player
+				set {warp.cooldown::%player%} to true
+				wait 3 seconds
+				if {warp.cooldown::%player%} is set:
+					teleportEffect(location of player)
+					clear {warp.cooldown::%player%}
+					set {back.%player's uuid%} to player's location
+					teleport player to {warp_%arg 1%}
+					teleportEffect(location of player)
+					send "&a¡You were teleported correctly to the warp!" to player
+
+on damage of player:
+	if {warp.cooldown::%victim%} is set:
+		clear {warp.cooldown::%victim%}
+		send "&b&lWARPS &8▏ &fYou has received damage, teleportation cancelled." to victim
+
+on player move:
+	if {warp.cooldown::%player%} is set:
+		clear {warp.cooldown::%player%}
+		send "&b&lWARPS &8▏ &fYou have moved, teleportation cancelled." to player

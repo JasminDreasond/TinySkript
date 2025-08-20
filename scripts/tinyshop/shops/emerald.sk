@@ -1,0 +1,44 @@
+# Emerald Menu
+function TinyShopEmerald(player: player, default_item: item, restart: boolean):
+
+	# Background
+	loop 9 times:
+		add {_default_item} to {_items::*}
+
+	# Items Menu
+	add {_default_item} to {_items::*}
+	add {_default_item} to {_items::*}
+	add tinyShopInsertItem("Emeralds", 1) to {_items::*}
+
+	loop 3 times:
+		add {_default_item} to {_items::*}
+
+	add tinyShopInsertItem("Emeralds", 2) to {_items::*}
+	add {_default_item} to {_items::*}
+	add {_default_item} to {_items::*}		
+
+	# Background
+	loop 9 times:
+		add {_default_item} to {_items::*}
+
+	if {_restart} is true:
+		createGUI({_player}, "TinyShopEmerald", {_items::*}, "&2Tiny Shop - Emerald", 4)
+	else:
+		insertIntoGUI({_player}, {_items::*})
+	
+	TinyShopDefault({_player}, {_default_item})
+
+function clickCustomGuiTinyShopEmerald(player: player, item: item, inventory: inventory, index: number):
+
+	# Default Item
+	clear {_items::*}
+	set {_default_item} to torch named " "
+	set custom model data of {_default_item} to 9999992
+	openTinyShopItem({_player}, "Emeralds", tinyShopGetItemID({_item}), {_item}, {_default_item})
+	clear {_items::*}
+
+	# Close Menu
+	TinyShopDefaultActions({_player}, {_item})
+	if name of {_item} is "&7Close Page":
+		TinyShopEmerald({_player}, {_default_item}, false)
+		stop

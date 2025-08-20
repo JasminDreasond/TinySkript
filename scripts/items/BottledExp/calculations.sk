@@ -1,0 +1,111 @@
+options:
+
+	# How much player will spend converting his xp to bottles. This cant be lower than xpEarn
+	xpCost: 10
+
+	# How much player will get xp from xp bottle
+	# Default value 8
+	# Having this value lower than xpCost will mean that players will loose some amount of exp while converting, which can help out in preventing mindless conversions or posible exploits with other plugins which could give out extra exp
+	xpEarn: 8
+
+# Load Plugin
+on load:
+	send "&7[&bTiny Bottle Calculations&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Bottle Calculations&7] &8» &cDisabled" to console
+
+# Exp Cost
+function expToExpCost(exp: number) :: number:
+	set {_result} to {_exp} - {@xpCost}
+	return {_result}
+
+# Level to Exp
+function levelToExp(level: number) :: number:
+
+	if {_level} <= 15:
+		set {_result} to {_level} * {_level} + 6 * {_level}
+		return {_result}
+		
+	else if {_level} <= 30:
+		set {_result} to 2.5 * {_level} * {_level} - 40.5 * {_level} + 360.0
+		return {_result}
+	
+	else:
+		set {_result} to 4.5 * {_level} * {_level} - 162.5 * {_level} + 2220.0
+		return {_result}
+
+# Delta Level To Exp
+function deltaLevelToExp(level: number) :: number:
+	if {_level} <= 15:
+		set {_result} to 2 * {_level} + 7
+		return {_result}
+	
+	else if {_level} <= 30:
+		set {_result} to 5 * {_level} - 38
+		return {_result}
+	
+	else:
+		set {_result} to 9 * {_level} - 158
+		return {_result}
+
+# Get Bottle Amount from the EXP number
+function xptobottles(xp: number) :: number:
+	set {_bottles} to ceil({_xp} / {@xpEarn})
+	return {_bottles}
+
+# EXP to Level
+function expToLevel(sourceleftexp: number, d: number) :: number:
+	if {_d} > 21863.0:
+		set {_d} to 21863.0
+
+	set {_i} to 1
+
+	while {_i} <= {_d} + 1.0:
+		set {_levelexp} to levelToExp({_i})
+		if {_levelexp} > {_sourceleftexp}:
+			set {_result} to {_i} - 1
+			return {_result}
+
+		set {_i} to {_i} + 1
+
+	return 0
+
+# User Data
+function getPlayerExperience(player: player) :: number:
+
+	set {_player_level} to getPlayerLevel({_player})
+	set {_player_exp} to getPlayerExp({_player})
+
+	set {_bukkitExp} to levelToExp({_player_level}) + round(deltaLevelToExp({_player_level}) * {_player_exp})
+	return {_bukkitExp}
+
+function currentlevelxpdelta(player: player) :: number:
+
+	set {_player_level} to getPlayerLevel({_player})
+	set {_player_exp} to getPlayerExp({_player})
+
+	set {_deltaLevel} to deltaLevelToExp({_player_level})
+	set {_level_to_xp} to levelToExp({_player_level})
+	set {_roundValue} to {_level_to_xp} + round({_deltaLevel} * {_player_exp}) - {_level_to_xp}
+
+	set {_levelxp} to {_deltaLevel} - {_roundValue}
+	return {_levelxp}
+
+# Test
+command /expinfo:
+	trigger:
+
+		send "&7[&bTiny Bottle Calculations&7] &8» &a %player%" to player
+
+		set {_exp} to getPlayerExperience(player)
+		set {_level_expdelta} to currentlevelxpdelta(player)
+
+		send "User Experience: %{_exp}%" to player
+		send "Currenct Level XP Delta: %{_level_expdelta}%" to player
+		
+		send "EXP to Level: %expToLevel({_exp}, {_level_expdelta})%" to player
+
+		send "" to player
+		
+		send "Your exp will give %xptobottles({_exp})% EXP bottles, but the command will give %xptobottles(expToExpCost({_exp}))% EXP bottles." to player

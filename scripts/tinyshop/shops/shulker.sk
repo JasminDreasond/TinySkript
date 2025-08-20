@@ -1,0 +1,56 @@
+# Shulker Box Menu
+function TinyShopShulkerBox(player: player, default_item: item, restart: boolean):
+
+	# Items Menu
+	add {_default_item} to {_items::*}
+	add tinyShopInsertItem("Shulkers", 1) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 2) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 3) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 4) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 5) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 6) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 7) to {_items::*}
+	add {_default_item} to {_items::*}
+
+	add {_default_item} to {_items::*}
+	add tinyShopInsertItem("Shulkers", 8) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 9) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 10) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 11) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 12) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 13) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 14) to {_items::*}
+	add {_default_item} to {_items::*}
+
+	add {_default_item} to {_items::*}
+	add {_default_item} to {_items::*}
+	add {_default_item} to {_items::*}
+	add tinyShopInsertItem("Shulkers", 15) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 16) to {_items::*}
+	add tinyShopInsertItem("Shulkers", 17) to {_items::*}
+	add {_default_item} to {_items::*}
+	add {_default_item} to {_items::*}
+	add {_default_item} to {_items::*}		
+
+	if {_restart} is true:
+		createGUI({_player}, "TinyShopShulkerBox", {_items::*}, "&2Tiny Shop - Shulker Box", 4)
+	else:
+		insertIntoGUI({_player}, {_items::*})
+	
+	TinyShopDefault({_player}, {_default_item})
+
+
+function clickCustomGuiTinyShopShulkerBox(player: player, item: item, inventory: inventory, index: number):
+	
+	# Default Item
+	clear {_items::*}
+	set {_default_item} to torch named " "
+	set custom model data of {_default_item} to 9999992
+	openTinyShopItem({_player}, "Shulkers", tinyShopGetItemID({_item}), {_item}, {_default_item})
+	clear {_items::*}
+
+	# Close Menu
+	TinyShopDefaultActions({_player}, {_item})
+	if name of {_item} is "&7Close Page":
+		TinyShopShulkerBox({_player}, {_default_item}, false)
+		stop

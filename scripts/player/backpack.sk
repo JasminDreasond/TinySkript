@@ -1,0 +1,75 @@
+options:
+	FolderName-1: TinyBackpack
+	prefix: &7[&bTiny Backpack&7]
+
+on load:
+	send "{@prefix} &8» &2Enabled" to console
+
+on unload:
+	send "{@prefix} &8» &cDisabled" to console
+
+# Backpack
+function openBackpack(player: player):
+
+	# Get Items
+	if {backpack::%{_player}'s uuid%::open} is not true:
+		load "plugins/{@FolderName-1}/bp/user_%{_player}'s uuid%.yml" as "TinyBackpack%{_player}'s uuid%"
+
+		# Prepare Backpack
+		set {backpack::%{_player}'s uuid%::open} to true
+		open chest inventory with 6 rows named "&fBackpack" to {_player}
+		wait 1 tick
+
+		# Insert Items
+		set {_count} to -1
+		loop 54 times:
+			set {_count} to {_count} + 1
+
+			if yaml list "items.%{_count}%" in "TinyBackpack%{_player}'s uuid%" is set:
+				set {_item} to ObjectToItem(yaml list "items.%{_count}%" in "TinyBackpack%{_player}'s uuid%")
+
+				if {_item} is set:
+					if {_item} is not air:
+						set slot {_count} of {_player}'s current inventory to {_item}
+
+		unload yaml "TinyBackpack%{_player}'s uuid%"
+
+# Close Backpack
+function closeBackpack(player: player):
+	
+	# Insert Items
+	if {backpack::%{_player}'s uuid%::open} is true:
+		
+		# Add Items
+		load "plugins/{@FolderName-1}/bp/user_%{_player}'s uuid%.yml" as "TinyBackpack%{_player}'s uuid%"
+		clear yaml list "items" in "TinyBackpack%{_player}'s uuid%"
+		
+		set {_count} to -1
+		loop 54 times:
+			set {_count} to {_count} + 1
+			set yaml list "items.%{_count}%" in "TinyBackpack%{_player}'s uuid%" to ItemToObject(slot loop-number -1 of {_player}'s current inventory)
+		
+		save yaml "TinyBackpack%{_player}'s uuid%"
+		
+		unload yaml "TinyBackpack%{_player}'s uuid%"
+
+	# Complete
+	clear {backpack::%{_player}'s uuid%::*}
+
+# Command
+command /backpack:
+	aliases: /bp
+	trigger:
+		openBackpack(player)
+
+on inventory close:
+	closeBackpack(player)
+
+on join:
+	clear {backpack::%player's uuid%}
+
+on first join:
+	clear {backpack::%player's uuid%}
+
+on quit:
+	clear {backpack::%player's uuid%}

@@ -1,0 +1,142 @@
+options:
+	FolderName-1: tiny_whitelist
+
+on load:
+	send "&7[&bTiny Whitelist&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Whitelist&7] &8» &cDisabled" to console
+
+command /whitelist [<text>] [<text>]:
+	permission: whitelist.use
+	trigger:
+
+		load "plugins/{@FolderName-1}/users.yml" as "whitelist"
+
+		if arg 1 is not set:
+			send "&7&oUse /whitelist add/remove/on/off/list (player)" to player
+			unload yaml "whitelist"
+			stop
+
+		if arg 1 is "add":
+
+			if arg 2 is not set:
+				send "&7&oYou need to fill in a player." to player
+				unload yaml "whitelist"
+				stop
+
+			if arg 2 is set:
+
+				set {_username} to arg 2 in lowercase
+				if yaml value "users.%{_username}%" from "whitelist" is not set:
+
+					add {_username} to yaml list "whitelist" from "whitelist"
+					set yaml value "users.%{_username}%" in "whitelist" to true
+
+					save yaml "whitelist"
+					unload yaml "whitelist"
+
+				else:
+
+					if yaml value "users.%{_username}%" in "whitelist" is not true:
+
+						add {_username} to yaml list "whitelist" from "whitelist"
+						set yaml value "users.%{_username}%" in "whitelist" to true
+
+						save yaml "whitelist"
+						unload yaml "whitelist"
+
+				send "&7&oYou've added %{_username}% to the whitelist." to player
+
+				stop
+
+		if arg 1 is "remove":
+
+			if arg 2 is not set:
+				send "&7&oYou need to fill in a player." to player
+				unload yaml "whitelist"
+				stop
+
+			if arg 2 is set:
+
+				set {_username} to arg 2 in lowercase
+				if yaml value "users.%{_username}%" in "whitelist" is true:
+					
+					set {_whitelist::*} to yaml list "whitelist" from "whitelist"
+					loop {_whitelist::*}:
+						if loop-value is not equal to {_username}:
+							add loop-value to {_whitelist2::*}
+
+					set yaml list "whitelist" from "whitelist" to {_whitelist2::*}
+					set yaml value "users.%{_username}%" in "whitelist" to false
+
+					save yaml "whitelist"
+					unload yaml "whitelist"
+				
+				send "&7&oYou've removed %{_username}% from the whitelist." to player
+				stop
+
+		if arg 1 is "list":
+			send "&7&oPlayers added to the whitelist: &r&7%yaml list "whitelist" from "whitelist"%" to player
+			unload yaml "whitelist"
+			stop
+
+		if arg 1 is "on":
+			set yaml value "stat" from "whitelist" to true
+			send "&7&oThe whitelist is now on." to player
+			save yaml "whitelist"
+			unload yaml "whitelist"
+			stop
+
+		if arg 1 is "off":
+			set yaml value "stat" from "whitelist" to false
+			send "&7&oThe whitelist is now off." to player
+			save yaml "whitelist"
+			unload yaml "whitelist"
+			stop
+
+		if arg 1 is "setmessage":
+
+			if arg 2 is not set:
+				send "&7&oYou need to fill in the kick message." to player
+				unload yaml "whitelist"
+				stop
+
+			if arg 2 is set:
+
+				set {_username} to arg 2 in lowercase
+				set yaml value "custom.s" from "whitelist" to true
+				set yaml value "custom.msg" from "whitelist" to {_username}
+
+				send "&7&oThe kick message has been changed to: %{_username}%" to player
+
+				save yaml "whitelist"
+				unload yaml "whitelist"
+
+				stop
+
+on join:
+	
+	load "plugins/{@FolderName-1}/users.yml" as "whitelist"
+	
+	if yaml value "stat" from "whitelist" is true:
+		
+		set {_username} to "%player%" in lowercase
+
+		if yaml value "users.%{_username}%" in "whitelist" is true:
+			unload yaml "whitelist"
+			stop
+		
+		else:
+			
+			if yaml value "custom.s" in "whitelist" is true:
+				wait 15 ticks
+				kick player due to yaml value "custom.msg" in "whitelist"
+				unload yaml "whitelist"
+				stop
+			
+			else:
+				wait 15 ticks
+				kick player due to "&7&oYou are not listed on Puddy Club's list of authorized users! If you think this is a mistake, contact support."
+				unload yaml "whitelist"
+				stop

@@ -1,0 +1,247 @@
+import:
+	java.lang.System
+
+options:
+	FolderName-1: TinyMoney
+	prefix: &7[&bTiny Money&7]
+
+# Load Plugin
+on load:
+	send "{@prefix} &8» &2Enabled" to console
+
+on unload:
+	send "{@prefix} &8» &cDisabled" to console
+
+# Start User
+on join:
+	load "plugins/{@FolderName-1}/wallet/user_%player's uuid%.yml" as "TinyWallet%player's uuid%"
+	getBalance(player)
+	unload yaml "TinyWallet%player's uuid%"
+
+on first join:
+	load "plugins/{@FolderName-1}/wallet/user_%player's uuid%.yml" as "TinyWallet%player's uuid%"
+	getBalance(player)
+	unload yaml "TinyWallet%player's uuid%"
+
+# Update Top Balance
+function updateTopBalance(player: player):
+
+	load "plugins/{@FolderName-1}/wallet/user_%{_player}'s uuid%.yml" as "TinyWallet%{_player}'s uuid%"
+
+	if yaml value "bigger.balance" from "TinyWallet%{_player}'s uuid%" is set:
+		if yaml value "balance" from "TinyWallet%{_player}'s uuid%" > yaml value "bigger.balance" from "TinyWallet%{_player}'s uuid%":
+			set yaml value "bigger.balance" from "TinyWallet%{_player}'s uuid%" to yaml value "balance" from "TinyWallet%{_player}'s uuid%"
+
+	else:
+		set yaml value "bigger.balance" from "TinyWallet%{_player}'s uuid%" to yaml value "balance" from "TinyWallet%{_player}'s uuid%"
+
+	unload yaml "TinyWallet%{_player}'s uuid%"
+
+# Get Balance
+function getBalance(player: player) :: object:
+
+	load "plugins/{@FolderName-1}/wallet/user_%{_player}'s uuid%.yml" as "TinyWallet%{_player}'s uuid%"
+	
+	set {_value} to yaml value "balance" from "TinyWallet%{_player}'s uuid%"
+
+	{_value} is not set:
+		set {_value} to 0
+		set yaml value "last_update" from "TinyWallet%{_player}'s uuid%" to System.currentTimeMillis()
+		set yaml value "balance" from "TinyWallet%{_player}'s uuid%" to 0
+		updateTopBalance({_player})
+		save yaml "TinyWallet%{_player}'s uuid%"
+
+	unload yaml "TinyWallet%{_player}'s uuid%"
+	return {_value}
+
+function getBalanceText(player: player) :: string:
+	set {_value} to getBalance({_player})
+	return "$%{_value}% bits"
+
+# Payments
+function setBalance(uuid: string, amount: number, who: string="???") :: boolean:
+	load "plugins/{@FolderName-1}/wallet/user_%{_uuid}%.yml" as "TinyWallet%{_uuid}%"
+	set yaml value "last_update" from "TinyWallet%{_uuid}%" to System.currentTimeMillis()
+	set yaml value "balance" from "TinyWallet%{_uuid}%" to {_amount}
+	save yaml "TinyWallet%{_uuid}%"
+	send "{@prefix} &8» [$%{_amount}%] Balance Set - %{_who}%" to console
+	unload yaml "TinyWallet%{_uuid}%"
+
+
+function payBalance(uuid: string, amount: number, who: string="???") :: boolean:
+
+	load "plugins/{@FolderName-1}/wallet/user_%{_uuid}%.yml" as "TinyWallet%{_uuid}%"
+
+	set {_balance} to yaml value "balance" from "TinyWallet%{_uuid}%"
+	set {_new_balance} to {_balance} - {_amount}
+
+	if {_new_balance} > -1:
+
+		set yaml value "last_update" from "TinyWallet%{_uuid}%" to System.currentTimeMillis()
+		set yaml value "balance" from "TinyWallet%{_uuid}%" to {_new_balance}
+		
+		save yaml "TinyWallet%{_uuid}%"
+		send "{@prefix} &8» [$%{_new_balance}%] < [$%{_amount}%] Balance Pay - %{_who}%" to console
+
+		unload yaml "TinyWallet%{_uuid}%"
+		return true
+
+	else:
+		unload yaml "TinyWallet%{_uuid}%"
+		return false
+
+function receiveBalance(uuid: string, amount: number, who: string="???") :: boolean:
+
+	load "plugins/{@FolderName-1}/wallet/user_%{_uuid}%.yml" as "TinyWallet%{_uuid}%"
+
+	set {_balance} to yaml value "balance" from "TinyWallet%{_uuid}%"
+	set {_new_balance} to {_balance} + {_amount}
+
+	if {_new_balance} > -1:
+		
+		set yaml value "last_update" from "TinyWallet%{_uuid}%" to System.currentTimeMillis()
+		set yaml value "balance" from "TinyWallet%{_uuid}%" to {_new_balance}
+		updateTopBalance({_player})
+
+		save yaml "TinyWallet%{_uuid}%"
+		send "{@prefix} &8» [$%{_new_balance}%] < [$%{_amount}%] Balance Receive - %{_who}%" to console
+
+		unload yaml "TinyWallet%{_uuid}%"
+		return true
+
+	else:
+		unload yaml "TinyWallet%{_uuid}%"
+		return false
+
+# Balance
+command /balance:
+	trigger:
+		send "{@prefix} &6%getBalanceText(player)%" to player
+		send "{@prefix} [%player%] [%player's uuid%] &6%getBalanceText(player)%" to console
+
+# Economy
+command /economy [<string>] [<offline player>] [<number>]:
+	usage: /economy [set|remove|add] <player> <number>
+	trigger:
+
+		if executor is player:
+			player has permission "tinymoney.economy" or "tinymoney.*":
+
+				if arg-2 is set:
+					if arg-3 is set:
+
+						if arg-1 is "set":
+							setBalance(arg-2's uuid, arg-3, "PLAYER_ADMIN_%player's uuid%")
+							send "{@prefix} &eYou set &6%arg-3%&e to the &6%arg-2%&e balance." to player
+
+						else if arg-1 is "remove":
+							set {_paid} to payBalance(arg-2's uuid, arg-3, "PLAYER_ADMIN_%player's uuid%")
+							if {_paid} is false:
+								setBalance(arg-2's uuid, 0, "PLAYER_ADMIN_%player's uuid%")
+							send "{@prefix} &cYou removed &6%arg-3%&c from the &6%arg-2%&c balance." to player
+
+						else if arg-1 is "add":
+							receiveBalance(arg-2's uuid, arg-3, "PLAYER_ADMIN_%player's uuid%")
+							send "{@prefix} &aYou added &6%arg-3%&a to the &6%arg-2%&a balance." to player
+
+						else:
+							send "{@prefix} &cInvalid Command!" to player
+
+					else:
+						send "{@prefix} &cInvalid Number! ARG 3" to player
+				else:
+					send "{@prefix} &cInvalid Player! ARG 2" to player
+
+			else:
+				send "{@prefix} &cNope! Leave me alone! >:c"
+
+		else if executor is console:
+
+			if arg-2 is set:
+				if arg-3 is set:
+
+					if arg-1 is "set":
+						setBalance(arg-2's uuid, arg-3, "CONSOLE")
+
+					else if arg-1 is "remove":
+						set {_paid} to payBalance(arg-2's uuid, arg-3, "CONSOLE")
+						if {_paid} is false:
+							setBalance(arg-2's uuid, 0, "PLAYER_ADMIN_%player's uuid%")
+
+					else if arg-1 is "add":
+						receiveBalance(arg-2's uuid, arg-3, "CONSOLE")
+
+					else:
+						send "{@prefix} &cInvalid Command!" to console
+
+				else:
+					send "{@prefix} &cInvalid Number! ARG 3" to console
+			else:
+				send "{@prefix} &cInvalid Player! ARG 2" to console
+
+		else:
+			send "{@prefix} &cNope! Leave me alone! >:c"
+
+command /economyuid [<string>] [<string>] [<number>]:
+	usage: /economy [set|remove|add] <player> <number>
+	trigger:
+
+		if executor is console:
+
+			if arg-2 is set:
+				if arg-3 is set:
+
+					if arg-1 is "set":
+						setBalance(arg-2, arg-3, "CONSOLE")
+
+					else if arg-1 is "remove":
+						set {_paid} to payBalance(arg-2, arg-3, "CONSOLE")
+						if {_paid} is false:
+							setBalance(arg-2, 0, "PLAYER_ADMIN_%player's uuid%")
+
+					else if arg-1 is "add":
+						receiveBalance(arg-2, arg-3, "CONSOLE")
+
+					else:
+						send "{@prefix} &cInvalid Command!" to console
+
+				else:
+					send "{@prefix} &cInvalid Number! ARG 3" to console
+			else:
+				send "{@prefix} &cInvalid Player! ARG 2" to console
+
+		else:
+			send "{@prefix} &cNope! Leave me alone! >:c"
+
+# Pay
+command /pay [<player>] [<number>]:
+	trigger:
+
+		if arg-1 is set:
+			if arg-1 is online:
+				if arg-1's uuid is not player's uuid:
+					if arg-2 is set:
+
+						set {_progress_1} to payBalance(player's uuid, arg-2, "PLAYER_PAY_%player's uuid%")
+						{_progress_1} is true:
+
+							set {_progress_2} to receiveBalance(arg-1's uuid, arg-2, "PLAYER_PAY_%player's uuid%")
+							{_progress_2} is true:
+								send "{@prefix} &aYou sent &6$%arg-2%&a to the &6%arg-1%&e balance." to player
+								send "{@prefix} &aYou received &6$%arg-2%&a from the &6%arg-1%&e balance." to arg-1
+								send "{@prefix} &a%player% sent &6$%arg-2%&a to the &6%arg-1%&e balance." to console
+
+							else:
+								send "{@prefix} &cThere was an error sending your payment. Please report this to Puddy Club staff immediately." to player
+
+						else:
+							send "{@prefix} &cYou don't have enough balance." to player
+
+					else:
+						send "{@prefix} &cInvalid Number! ARG 2" to player
+				else:
+					send "{@prefix} &cHey! This is youself! Silly..." to player
+			else:
+				send "{@prefix} &c%arg-1% is not online." to player
+		else:
+			send "{@prefix} &cInvalid Player! ARG 1" to player

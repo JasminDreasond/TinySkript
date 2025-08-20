@@ -1,0 +1,5 @@
+function teleportEffect(location: location):
+	wait 1 tick
+	play 200 portal offset of 0.4, 0.4, 0.4 speed 0.1 at {_location} to all players
+	play 200 reverse portal offset of 0.4, 0.4, 0.4 speed 0.1 at {_location} to all players
+	play sound "minecraft:entity.enderman.teleport" at volume 1 at {_location} to all players

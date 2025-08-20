@@ -1,0 +1,42 @@
+on explosion:
+
+	play 60 smoke offset of 0.6, 0.6, 0.6 speed 0.01 at event-location to all players
+	play 60 cloud offset of 0.6, 0.6, 0.6 speed 0.01 at event-location to all players
+	play 50 flame offset of 0.6, 0.6, 0.6 speed 0.01 at event-location to all players
+	wait 1 tick
+
+	play 60 smoke offset of 1.2, 1.2, 1.2 speed 0.01 at event-location to all players
+	play 60 cloud offset of 1.2, 1.2, 1.2 speed 0.01 at event-location to all players
+	play 50 flame offset of 1.2, 1.2, 1.2 speed 0.01 at event-location to all players
+	wait 1 tick
+
+	play 60 smoke offset of 1.8, 1.8, 1.8 speed 0.01 at event-location to all players
+	play 60 cloud offset of 1.8, 1.8, 1.8 speed 0.01 at event-location to all players
+	play 50 flame offset of 1.8, 1.8, 1.8 speed 0.01 at event-location to all players
+	wait 1 tick
+
+	play 60 smoke offset of 2.4, 2.4, 2.4 speed 0.01 at event-location to all players
+	play 60 cloud offset of 2.4, 2.4, 2.4 speed 0.01 at event-location to all players
+	play 50 flame offset of 2.4, 2.4, 2.4 speed 0.01 at event-location to all players
+	wait 1 tick
+
+	play 60 smoke offset of 3, 3, 3 speed 0.01 at event-location to all players
+	play 60 cloud offset of 3, 3, 3 speed 0.01 at event-location to all players
+	play 50 flame offset of 3, 3, 3 speed 0.01 at event-location to all players
+	wait 3 tick
+
+	play 30 smoke offset of 3, 3, 3 speed 0.0001 at event-location to all players
+	play 30 cloud offset of 3, 3, 3 speed 0.0001 at event-location to all players
+	wait 8 tick
+
+	play 10 smoke offset of 3, 3, 3 speed 0.0001 at event-location to all players
+	play 10 cloud offset of 3, 3, 3 speed 0.0001 at event-location to all players
+	wait 13 tick
+
+	play 10 smoke offset of 3, 3, 3 speed 0.0001 at event-location to all players
+	play 10 cloud offset of 3, 3, 3 speed 0.0001 at event-location to all players
+
+	wait 20 tick
+
+	play 10 smoke offset of 3, 3, 3 speed 0.0001 at event-location to all players
+	play 10 cloud offset of 3, 3, 3 speed 0.0001 at event-location to all players

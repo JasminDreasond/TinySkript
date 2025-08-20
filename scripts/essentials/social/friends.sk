@@ -1,0 +1,137 @@
+# https://www.spigotmc.org/resources/friends-skript.106577/
+# Edited version
+
+# CONFIGURATION #
+options:
+	Prefix: &2&lFriends >>
+	FolderName-1: TinyFriends
+
+on load:
+	send "&7[&bTiny Friends&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Friends&7] &8» &cDisabled" to console
+
+# CODE #
+command /friends [<text>] [<player>] [<text>]:
+	aliases: /fr
+	trigger:
+
+		#load "plugins/{@FolderName-1}/data_%uuid of player%.yml" as "friends_%uuid of player%"
+
+		if arg 1 is not set:
+
+			send " " to player
+			send "&7&m----------------&e&l Friends &7&m-------------------" to player
+			send "&e/fr add <player> &r&d>> &7Add  a friend" to player
+			send "&e/fr remove <player> &r&d>> &7Remove friend" to player
+			send "&e/fr msg <player> <zprava> &r&d>> &7Private message to player" to player
+			send "&e/fr bc <player> <zprava> &r&d>> &7Private broadcast to all friends" to player
+			send "&e/fr tp <nick> &r&d>> &7Teleports you to specified friend" to player
+			send "&e/fr list &r&d>> &7List of your friends" to player
+			send "&7&m--------------------------------------------" to player
+			send " " to player
+		
+		if arg 1 is "invite" or "add" or "accept":
+
+			if player-arg is set:
+				if player-arg is not player:
+					if {friend.%uuid of player%::*} contains player-arg:
+						send "{@Prefix} &cYou are already friends with this player" to player
+						stop
+					if {friend.attente.%uuid of player%} is set:
+						add player to {friend.%{friend.attente.%uuid of player%}%::*}
+						add player to {friend.%uuid of player-arg%::*}						
+						add player-arg to {friend.%uuid of player%::*}						
+						send "{@Prefix} &aNow you have are friends with the player &e%player-arg%" to player
+						send "{@Prefix} &aNow you have are friends with the player &e%player%" to player-arg
+						wait 1 tick
+						delete {friend.attente.%uuid of player%}						
+					else:
+						set {friend.attente.%uuid of player-arg%} to player
+						send " " to player-arg
+						send "&7-----------------------------------------------------" to player-arg
+						send "&e%player% &asent you a friend request" to player-arg
+						send "&aTo accept this message, use: &b/friends add &b%player%" to player-arg
+						send "&7-----------------------------------------------------" to player-arg
+						send "{@Prefix} &fThe request was sent to &e%player-arg%" to player
+				else:
+					send "{@Prefix} &cYou can't be friend with yourself!" to player
+			else:
+				send "{@Prefix} Who do you want to add as a friend?" to player
+		
+		if arg 1 is "remove" or "delete":
+			if player-arg is set:
+				if player-arg is not player:
+					if {friend.%uuid of player%::*} contains player-arg:
+						remove player-arg from {friend.%uuid of player%::*}
+						remove player from {friend.%uuid of player-arg%::*}
+						send "{@Prefix} &cYou are no longer friend with &e%player-arg%&c!" to player
+						send "{@Prefix} &e%player% &csi &cremoved you from their friends list!" to player-arg
+					else:
+						send "{@Prefix} &cyou are not friends with this player!" to player
+						stop
+		
+		if arg 1 is "list":
+			send " "
+			send "&7&m---------&e&l Friends &7&m------------" to player
+			loop {friend.%uuid of player%::*}:
+				if loop-value is null:
+					send "&7You don't have any friends!"
+				if loop-value is online:
+					send "&9>> &a%loop-value%&7 - &6%world of player%" to player
+				if loop-value is offline:
+					send "&9>> &8%loop-value% &7- &cOffline" to player
+			send "&7&m------------------------------" to player
+			send " "
+		
+		if arg 1 is "msg":
+			if player-arg is set:
+				if {friend.%uuid of player%::*} contains player-arg:
+					if arg-3 is set:
+						loop {friend.%uuid of player%::*}:
+							if loop-value is online:
+								send "{@Prefix} &6%player% &7&l» &8You: &f%arg-3%" to player-arg
+								send "{@Prefix} &8You &7&l» &6%player-arg%: &f%arg-3%" to player
+					else:
+						send "{@Prefix} &bUsage: /fr msg <friend> <msg>" to player
+				else:
+					send "{@Prefix} &c%player-arg% is not your friend! Choose another user destination!" to player
+
+		if arg 1 is "bc":
+			if arg-3 is set:
+				loop {friend.%uuid of player%::*}:
+					send "{@Prefix} &6%player% &7- &bBroadcast: &f%arg-3%" to loop-value
+				send "{@Prefix} &bBroadcast: &f%arg-3%" to player
+			else:
+				send "{@Prefix} &bSpravne pouziti: /fr bc <msg>" to player
+		
+		
+		if arg 1 is "tp":
+			if player-arg is set:
+				if {friend.%uuid of player%::*} contains player-arg:
+					teleportEffect(location of player)
+					teleport player to player-arg
+					teleportEffect(location of player)
+					send "{@Prefix} &e%player% &bteleported on you!" to player-arg
+					send "{@Prefix} &bYou teleported yourself to &e%player-arg%&b!" to player
+				else:
+					send "{@Prefix} &c%player-arg% is not your friend! Choose another teleport destination!" to player
+
+		#unload yaml "friends_%uuid of player%"
+
+#on chat tab complete "/friends":
+#	if player has permission "{@permission}":
+#		set (tab completions for position 1) to ("invite","remove","delete","list","msg","bc","tp")
+
+on join:
+	#load "plugins/{@FolderName-1}/data_%uuid of player%.yml" as "friends_%uuid of player%"
+	loop {friend.%uuid of player%::*}:
+		send "{@Prefix} &6%player% &ajoined the server!" to loop-value
+	#unload yaml "friends_%uuid of player%"
+
+on quit:
+	#load "plugins/{@FolderName-1}/data_%uuid of player%.yml" as "friends_%uuid of player%"
+	loop {friend.%uuid of player%::*}:
+		send "{@Prefix} &6%player% &cdisconnected from the server!" to loop-value
+	#unload yaml "friends_%uuid of player%"

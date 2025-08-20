@@ -1,0 +1,38 @@
+import:
+	org.bukkit.Bukkit
+	org.bukkit.inventory.ItemStack
+	org.bukkit.inventory.ShapedRecipe
+	org.bukkit.NamespacedKey
+	org.bukkit.Material
+
+# Ao comer o pudim, invés de ser pote de sopa, vira os vidros de volta. Aumentar a quantidade de vida recuperada pelo pudim.
+on load:
+
+	# Item Data
+	wait 1 tick
+	set {_skript} to Bukkit.getServer().getPluginManager().getPlugin("Skript")
+	set {_item} to new ItemStack(Material.MUSHROOM_STEW)
+
+	{_item}.setAmount(1)
+	
+	set {_meta} to {_item}.getItemMeta()
+
+	{_meta}.setCustomModelData(1)
+	{_meta}.setDisplayName("Tiny Pudding")
+
+	{_item}.setItemMeta({_meta})
+
+	set {_key} to new NamespacedKey({_skript}, "tiny_pudding")
+	set {_recipe} to new ShapedRecipe({_key}, {_item}) 
+
+	# Shape
+	{_recipe}.shape("ESE", "MMM", "GGG")
+
+	{_recipe}.setIngredient("S", Material.SUGAR)
+	{_recipe}.setIngredient("E", Material.EGG)
+	{_recipe}.setIngredient("M", Material.MILK_BUCKET)
+	{_recipe}.setIngredient("G", Material.GLASS_PANE)
+
+	# Add Recipe
+	Bukkit.addRecipe({_recipe})
+	send "&7[&bCustom Recipe - Tiny Pudding&7] &8» &2Enabled" to console

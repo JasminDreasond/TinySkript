@@ -1,0 +1,24 @@
+function helix2(location: location, radius: number, angle: number, ascend: number, size: number) :: locations:
+	set {_height} and {_current} to 0
+	while {_height} is less than {_size}:
+		add {_ascend} / (360 / {_angle}) to {_height}
+		add {_angle} to {_current}
+		set {_l} to {_location}
+		add (cos ({_current} / 180) * 3.14159265358979323846) * {_radius} to y-loc of {_l}
+		add {_height} to x-loc of {_l}
+		add (sin ({_current} / 180) * 3.14159265358979323846) * {_radius} to z-loc of {_l}
+		add {_l} to {_l::*}
+	return {_l::*}
+
+    #set {_radius} to 2
+    #set {_angle} to 10
+    #set {_ascend} to 12
+    #set {_size} to 30
+    #set {_locs::*} to helix2(event-location, {_radius}, {_angle}, {_ascend}, {_size}) 
+
+    # Send Effect to Players
+    #yaml value "effectRadius" in "tinyCBlock%{_id}%" is set:
+    #    loop players in radius yaml value "effectRadius" in "tinyCBlock%{_id}%" of event-player:
+    #        loop {_locs::*}:
+    #            wait 1 tick
+    #            play smoke on loop-value-2 to loop-player-1

@@ -1,0 +1,91 @@
+import:
+    java.lang.System
+
+# Options
+options:
+	FolderName-1: TinyInventoryManager
+
+# Load Plugin
+on load:
+	send "&7[&bTiny Inventory Manager&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Inventory Manager&7] &8» &cDisabled" to console
+
+# Player Dead
+on death of player:
+
+	# load data
+	set {_unix-time} to System.currentTimeMillis()
+
+	 # get death number
+	load "plugins/{@FolderName-1}/dead/user_%victim's uuid%.yml" as "dead-%victim's uuid%"
+	if yaml path "deathcounter" in "dead-%victim's uuid%" does not exist:
+		set yaml value "deathcounter" in "dead-%victim's uuid%" to 0
+		set {_count} to 0
+	else:
+		set {_count} to yaml value "deathcounter" in "dead-%victim's uuid%"
+
+	# increment death number and save meta-data
+	add 1 to {_count}
+
+	# save the inventory
+	delete yaml list "items" from "dead-%victim's uuid%"
+	loop drops:
+
+		# keep items
+		# don't protect special arrows
+		loop-value is clock or shovel or pickaxe or axe or hoe or sword or helmet or chestplate or leggings or boots or bow or arrow or trident or crossbow or shield or emerald or emerald block or saddle or name tag or experience bottle or shulker box or white shulker box or orange shulker box or magenta shulker box or light blue shulker box or yellow shulker box or lime shulker box or pink shulker box or gray shulker box or light gray shulker box or cyan shulker box or purple shulker box or blue shulker box or brown shulker box or green shulker box or red shulker box or black shulker box:
+			add loop-value to yaml list "items" from "dead-%victim's uuid%"
+
+		# drop items
+		else:
+			drop loop-value at victim's location
+		
+	# update death count
+	set yaml value "deathcounter" in "dead-%victim's uuid%" to {_count}
+	set yaml value "last_update" in "dead-%victim's uuid%" to {_unix-time}
+
+	save yaml "dead-%victim's uuid%"
+
+	remove drops from the drops
+	unload yaml "dead-%victim's uuid%"
+
+# Respawn Player with the items back
+on respawn:
+
+	load "plugins/{@FolderName-1}/dead/user_%player's uuid%.yml" as "dead-%player's uuid%"
+	set {_inv::*} to yaml list "items" from "dead-%player's uuid%"
+
+	if player can't hold {_inv::*}:
+		drop {_inv::*} at player
+	else:
+		give {_inv::*} to player 
+
+	unload yaml "dead-%player's uuid%"
+
+# Load Inventory
+function downloadLoginInventory(player: player):
+	send "&b[Puddy Club] &fYour inventory has been successfully downloaded from the Puddy Club cloud!" to {_player}
+	set {_inv::*} to yaml list "items" from "inventory-%{_player}'s uuid%"
+	clear {_player}'s inventory
+
+	if {_player} can't hold {_inv::*}:
+		drop {_inv::*} at {_player}
+	else:
+		give {_inv::*} to {_player}
+
+	set yaml value "inv_downloaded" from "inventory-%{_player}'s uuid%" to true
+	save yaml "inventory-%{_player}'s uuid%"
+
+on join:
+
+	load "plugins/{@FolderName-1}/inventory/user_%player's uuid%.yml" as "inventory-%player's uuid%"
+	
+	yaml value "inv_downloaded" in "inventory-%player's uuid%" exist:
+		if yaml value "inv_downloaded" in "inventory-%player's uuid%" is false:
+			downloadLoginInventory(player)
+	else:
+		downloadLoginInventory(player)
+
+	unload yaml "inventory-%player's uuid%"

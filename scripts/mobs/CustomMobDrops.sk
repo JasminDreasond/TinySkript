@@ -1,0 +1,112 @@
+#Enemy Mobs
+on death of zombie:
+	chance of 1%:
+		drop 5 diamond at victim
+
+	#change of 15%:
+	#	drop 1 zombie head at victim
+
+on death of creeper:
+	chance of 1%:
+		drop 5 diamond at victim
+
+	#change of 15%:
+	#	drop 1 creeper head at victim
+
+on death of Blaze:
+	chance of 1%:
+		drop 6 blaze powder at victim
+
+on death of CaveSpider:
+	chance of 1%:
+		drop 1 potion of poison at victim
+
+on death of enderman:
+	chance of 1%:
+		drop 1 potion of invisibility at victim
+
+on death of SilverFish:
+	chance of 1%:
+		drop 1 fire charge at victim
+
+on death of Skeleton:
+	chance of 1%:
+		drop 2 string at victim
+
+	#change of 15%:
+	#	drop 1 skeleton skull at victim
+
+on death of Slime:
+	chance of 1%:
+		drop 1 potion of slowness at victim
+
+on death of Spider:
+	chance of 1%:
+		drop 1 sugar at victim
+
+on death of Witch:
+	chance of 10%:
+		drop 1 potion of healing at victim
+
+on death of Wither:
+	chance of 50%:
+		drop 5 nether wart at victim
+
+	#change of 15%:
+	#	drop 1 wither skeleton skull at victim
+
+on death of Zombie Pigmen:
+	chance of 1%:
+		drop 1 potion of fire resistance at victim
+
+#Friendly Mobs
+
+#on death of Chicken:
+#	chance of 1%:
+#		drop 2 cooked chicken at victim
+
+#on death of Cow:
+#	chance of 1%:
+#		drop 2 cooked beef at victim
+
+#on death of Horse:
+#	chance of 1%:
+#		drop 2 feathers at victim
+
+#on death of Mooshroom:
+#	chance of 1%:
+#		drop 2 cooked beef at victim
+
+#on death of Ocelot:
+#	chance of 1%:
+#		drop 2 cooked fish at victim
+
+#on death of Pig:
+#	chance of 1%:
+#		drop 2 cooked pork at victim
+
+#on death of sheep:
+#	chance of 1%:
+#		drop 2 snowball at victim
+
+#on death of SnowGolem:
+#	chance of 10%:
+#		drop 2 red rose at victim
+
+#on death of Squid:
+#	chance of 20%:
+#		drop 2 black wool at victim
+
+#on death of Villager:
+#	chance of 30%:
+#		drop 2 book at victim
+
+#on death of Wolf:
+#	chance of 1%:
+#		drop 2 bone at victim
+
+#Player
+on death of player:
+	#change of 15%:
+	set {_head} to ("%victim%" parsed as offline player)'s head
+	drop {_head} named "&c%victim%'s head" at victim's location

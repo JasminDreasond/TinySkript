@@ -1,0 +1,38 @@
+# Made By Dex
+# Edited version
+
+options:
+	prefix: &8[&dTiny Back&8]
+	frame: blue stained glass pane
+	SoundB: minecraft:entity.player.levelup
+	SoundB-Volume: 1
+	SoundB-Pitch: 2
+
+on load:
+	send "&7[&bTiny Back&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Back&7] &8» &cDisabled" to console
+
+on death of player:
+	set {back.%victim's uuid%} to victim's location
+	
+	send "{@prefix} &aYou died at the coordinates" to victim
+	send victim's location to victim
+	
+	wait 7 ticks
+	play sound "{@SoundB}" with volume {@SoundB-Volume} and pitch {@SoundB-Pitch} to victim
+
+
+command /back:
+	permission: skript.back
+	permission message: {@prefix} &cNo Permission.
+	trigger:
+
+		teleportEffect(player's location)
+		set {_newback} to player's location
+		teleport player to {back.%player's uuid%}
+		teleportEffect(location of {back.%player's uuid%})
+
+		set {back.%player's uuid%} to {_newback}
+		play sound "{@SoundB}" with volume {@SoundB-Volume} and pitch {@SoundB-Pitch}

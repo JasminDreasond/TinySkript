@@ -1,0 +1,79 @@
+
+# Open Tiny Shop
+command /tinyshop:
+	trigger:
+
+		# Default Item
+		set {_default_item} to torch named " "
+		set custom model data of {_default_item} to 9999992
+
+		# Background
+		loop 9 times:
+			add {_default_item} to {_items::*}
+		
+		# Emerald Trade
+		add {_default_item} to {_items::*}
+		add {_default_item} to {_items::*}
+		add emerald named "&f&lEmerald" with lore "&4These items will not drop when you die." to {_items::*}
+
+		# Background
+		loop 3 times:
+			add {_default_item} to {_items::*}
+
+		# Shulker Box Shop
+		set {_shulk_item} to shulker box named "&f&lShulker Boxes"
+		set line 1 of lore of {_shulk_item} to "&4You can use this in your house."
+		set line 2 of lore of {_shulk_item} to "&4You can store these items inside your backpack."
+		set line 3 of lore of {_shulk_item} to "&4These items will not drop when you die."
+
+		add {_shulk_item} to {_items::*}
+
+		# Background
+		add {_default_item} to {_items::*}
+		add {_default_item} to {_items::*}
+
+		# Menu Row
+
+		# Background
+		loop 9 times:
+			add {_default_item} to {_items::*}
+
+		# Balance
+		set {_head} to skull of player
+		add {_head} named "&e%player%" with lore "&6Money: &2%getBalanceText(player)%" to {_items::*}
+
+		# Background
+		loop 7 times:
+			add {_default_item} to {_items::*}
+
+		# Close Menu
+		set {_close_button} to torch named "&7Close"
+		set custom model data of {_close_button} to 9999995
+		add {_close_button} to {_items::*}
+
+		# Create Row
+		createGUI(player, "TinyShop", {_items::*}, "&fTiny Shop", 4)
+
+# Main Menu
+function clickCustomGuiTinyShop(player: player, item: item, inventory: inventory, index: number):
+
+	# Close Menu
+	if name of {_item} is "&7Close":
+		close {_player}'s inventory
+		stop
+
+	# Default Item
+	set {_default_item} to torch named " "
+	set custom model data of {_default_item} to 9999992
+
+	# Emerald Menu
+	if name of {_item} is "&f&lEmerald":
+		
+		close {_player}'s inventory
+		TinyShopEmerald({_player}, {_default_item}, true)
+		
+	# Shulker Box Menu
+	else if name of {_item} is "&f&lShulker Boxes":
+		
+		close {_player}'s inventory
+		TinyShopShulkerBox({_player}, {_default_item}, true)

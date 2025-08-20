@@ -1,0 +1,90 @@
+#-----------------------------------------------------------------------------------------------------
+options:
+
+	world: "puddy_club"
+
+#-----------------------------------------------------------------------------------------------------
+
+on load:
+	send "&7[&bTiny LockettePro&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny LockettePro&7] &8» &cDisabled" to console
+
+#import:
+#	de.tr7zw.nbtapi.NBTItem
+
+# Check Chest
+on click on chest:
+
+	# Main Values
+	set {_can_open} to false
+	set {_exist_key} to false
+
+	# Check Items
+	loop items in block at event-block's inventory:
+
+		# Item Found
+		loop-item is stick:
+			custom model data of loop-item is 1:
+
+				# Exist Key
+				set {_exist_key} to true
+
+				# Is User
+				lore of loop-item is player's uuid:
+
+					{_can_open} is false:
+						sendActionBar(player, "&aYour key is protecting this chest from being opened by strangers.")
+
+					set {_can_open} to true
+
+	{_exist_key} is true:
+		{_can_open} is false:
+			sendActionBar(player, "&cThis chest is locked by some user's keys.")
+
+
+on rightclick on chest:
+
+	# Main Values
+	set {_can_open} to false
+	set {_exist_key} to false
+
+	# Check Items
+	loop items in block at event-block's inventory:
+
+		# Item Found
+		loop-item is stick:
+			custom model data of loop-item is 1:
+
+				# Exist Key
+				set {_exist_key} to true
+
+				# Is User
+				lore of loop-item is player's uuid:
+					set {_can_open} to true
+
+	{_exist_key} is true:
+		{_can_open} is false:
+			cancel event
+
+	#set {_loc} to event-block's location
+	#set {_chest} to event-block's location.getBlock().getState()
+
+	#loop 54 times:
+	#	set {_loop} to loop-number - 1
+	#	set {_item} to slot {_loop} of event-block's inventory
+	#	{_item} is stick:
+	#		custom model data of {_item} is 1:
+
+	#			set {_NBT} to new NBTItem({_chest}.getInventory().getItem({_loop}))
+	#			set {_key_uuid} to {_NBT}.getString("key_uuid")
+	#			{_key_uuid} is set:
+	#				send "%{_key_uuid}%" to player
+
+#on sign change:
+#	if blocks in radius 1 of event-block contains Chest:
+#		if line 1 is "[private]":
+#			set line 1 to "&9[private]"
+#			set line 2 to "%player%"
+#			stop

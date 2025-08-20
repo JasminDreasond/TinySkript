@@ -1,0 +1,37 @@
+import:
+	java.lang.System
+
+every 1 second:
+
+	loop all players:
+
+		# Random TP
+		if {rtpcooldown.%loop-player's uuid%} exists:
+			if {rtpcooldown.%loop-player's uuid%} <= 1:
+				delete {rtpcooldown.%loop-player's uuid%}
+			else:
+				remove 1 from {rtpcooldown.%loop-player's uuid%}
+
+		# TPA
+		if {requestpending.%loop-player's uuid%} is true: 
+			add 1 to {requestpendingcount.%loop-player's uuid%}
+			if {requestpendingcount.%loop-player's uuid%} >= 120:
+				loop-player command "tpdeny"
+
+every 1 minute:
+
+	loop all players:
+
+		# PlayTime+
+		load "plugins/TinyServerData/user/data_%loop-player's uuid%.yml" as "user_data_%loop-player's uuid%"
+		
+		set yaml value "last_update" from "user_data_%loop-player's uuid%" to System.currentTimeMillis()
+
+		set yaml value "playtime.seconds" from "user_data_%loop-player's uuid%" to {seconds::%loop-player's uuid%}
+		set yaml value "playtime.minutes" from "user_data_%loop-player's uuid%" to {minutes::%loop-player's uuid%}
+		set yaml value "playtime.hours" from "user_data_%loop-player's uuid%" to {hours::%loop-player's uuid%}
+		set yaml value "playtime.days" from "user_data_%loop-player's uuid%" to {days::%loop-player's uuid%}
+
+		save yaml "user_data_%loop-player's uuid%"
+		unload yaml "user_data_%loop-player's uuid%"
+		

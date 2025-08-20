@@ -1,0 +1,21 @@
+on load:
+	send "&7[&bTiny Crypto Lib&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Crypto Lib&7] &8» &cDisabled" to console
+
+function check_crypto_item(player: player, id: number, name: text, name2: text):
+
+	wait 1 tick
+	{_player}'s held item is lapis lazuli:
+		custom model data of {_player}'s held item is {_id}:
+
+			load "plugins/crypto_folder/%{_name}%/database.yml" as "%{_name}%"
+
+			set {_price_close} to yaml value "close_string" from "%{_name}%"
+			send action bar "The %{_name2}% price is $%{_price_close}%" to {_player}
+
+			set name of {_player}'s held item to {_name2}
+			set lore of {_player}'s held item to "Crypto Item"
+
+			unload yaml "%{_name}%"

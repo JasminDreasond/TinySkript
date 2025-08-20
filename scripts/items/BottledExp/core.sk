@@ -1,0 +1,50 @@
+options:
+	corePrefix: &7[&aTiny BottledExp&7]&r
+
+# Get Bottle
+command /bottle <string="">:
+	trigger:
+
+		if arg-1 is "get":
+
+			set {_exp} to expToExpCost(getPlayerExperience(player))
+			set {_bottles} to xptobottles({_exp})
+			set level of player to 0
+
+			{_exp} > 0:
+				drop {_bottles} of experience bottle at player
+				send "{@corePrefix} &2You have ordered: &3%{_bottles}% &2bottles! Items are on the floor." to player
+
+			else:
+				send "{@corePrefix} &cYour exp is insufficient!" to player
+
+		else if arg-1 is "store":
+			
+			set {_exp} to expToExpCost(getPlayerExperience(player))
+			set {_bottles} to xptobottles({_exp})
+			set level of player to 0
+
+			{_exp} > 0:
+				drop 1 of experience bottle named "&6BottleExp Store" with lore "&eStored Bottles: %{_bottles}%" at player
+				send "{@corePrefix} &2You have ordered: &3%{_bottles}% &2bottles! Items are on the floor." to player
+
+			else:
+				send "{@corePrefix} &cYour exp is insufficient!" to player
+
+		else:
+			send "{@corePrefix} &cYou need to choose options between get or store." to player
+
+# Get Bottles Pack
+on right click with experience bottle:
+	if event-item is experience bottle named "&6BottleExp Store":
+		cancel event
+
+		set {_bottles} to "%lore of event-item%"
+		replace all "&eStored Bottles: " with "" in {_bottles}
+		set {_bottles} to {_bottles} parsed as number
+
+		set item amount of event-player's held item to item amount of event-player's held item - 1
+		play sound "entity.experience_orb.pickup" with volume 0.5 to all players
+		drop {_bottles} of experience bottle at player
+
+		send "{@corePrefix} &2You have ordered: &3%{_bottles}% &2bottles from the BottleExp Store! Items are on the floor." to player

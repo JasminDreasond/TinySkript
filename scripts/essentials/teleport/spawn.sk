@@ -1,0 +1,65 @@
+# Edited version
+
+on load:
+	send "&7[&bTiny Spawn&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Spawn&7] &8» &cDisabled" to console
+
+command /setspawn:
+	aliases: spawnset, sethub, hubset, setlobby, lobbyset
+	permission: spawn.setspawn
+	permission message: &cSorry, but you don't have permission to execute this command!
+	description: Set spawn at your location.
+	trigger:
+		message "&6You have &cset spawn&6 at your location!" to player
+		set {spawn} to location of player
+
+command /spawn [<player>]:
+	aliases: hub, lobby
+	permission: spawn.spawn
+	permission message: &cSorry, but you don't have permission to execute this command!
+	description: Teleport you to spawn.
+	trigger:
+		if {spawn} isn't set:
+			message "&4Error:&c spawn is not set!" to player
+			stop
+		else:
+			argument 1 is not set:
+				teleportEffect(location of player)
+				set {back.%player's uuid%} to player's location
+				teleport player to {spawn}
+				teleportEffect(location of player)
+				message "&6Teleporting..." to player
+			else:
+				if sender has permission "spawn.spawn.others":
+					if argument is online:
+						teleportEffect(location of argument)
+						set {back.%argument's uuid%} to argument's location
+						teleport argument to {spawn}
+						teleportEffect(location of argument)
+					if sender is a player:
+						message "&6You have been teleported to spawn by &c%player%&6." to argument 1
+					if sender is not a player:
+						teleportEffect(location of player)
+						message "&6You have been teleported to spawn by &cConsole&6." to argument 1
+						set {back.%player's uuid%} to player's location
+						teleport player to {spawn}
+						teleportEffect(location of player)
+				else:
+					message "&cSorry, but you don't have permission to execute this command!" to player
+
+command /delspawn:
+	permission: spawn.spawn.delete
+	permission message: &cSorry, but you don't have permission to execute this command!
+	description: Unset spawn location.
+	trigger:
+		delete {spawn}
+		message "&6You have successfully unset &cspawn6!" to player
+
+on respawn:
+	if {spawn} isn't set:
+		stop
+	else:
+		wait 1 tick
+		teleport player to {spawn}

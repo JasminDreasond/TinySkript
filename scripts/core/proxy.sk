@@ -1,0 +1,18 @@
+import:
+	ch.njol.skript.Skript
+	java.lang.Runnable
+
+options:
+	FolderName-1: TinyServerData
+
+on load:
+	load "plugins/{@FolderName-1}/data.yml" as "TinyServerData"
+
+on unload:
+	unload yaml "TinyServerData"
+
+function createProxy(name: string, args: objects) :: objects:
+	set {_function::run} to function reference {_name} called with args {_args::*}
+	set {_proxy} to new proxy instance of Runnable using {_function::*}
+	add {_proxy} to {_result::*}
+	return {_result::*}

@@ -1,0 +1,307 @@
+options:
+
+	prefix: &7[&bTiny Shop&7]
+
+# Load Plugin
+on load:
+	load "plugins/TinyGUI/tinyshop.yml" as "TinyShopGUI"
+	send "{@prefix} &8» &2Enabled" to console
+
+on unload:
+	unload yaml "TinyShopGUI"
+	send "{@prefix} &8» &cDisabled" to console
+
+# Insert Item
+function tinyShopInsertItem(shop: string, id: number, name: string="") :: item:
+
+	set {_value_name} to "%{_shop}%.data.%{_id}%.material"
+	set {_price_value} to "%{_shop}%.data.%{_id}%.buy"
+	set {_price_value_2} to "%{_shop}%.data.%{_id}%.sell"
+
+	{_name} is not "":
+		evaluate "set {_result} to %yaml value {_value_name} from "TinyShopGUI"% named ""%{_name}%"""
+	else:
+		evaluate "set {_result} to %yaml value {_value_name} from "TinyShopGUI"%"
+
+	set line 1 of lore of {_result} to "&eItem ID: %{_id}%"
+	set line 2 of lore of {_result} to "&aBuy: $%yaml value {_price_value} from "TinyShopGUI"%"
+	set line 3 of lore of {_result} to "&cSell: $%yaml value {_price_value_2} from "TinyShopGUI"%"
+
+	return {_result}
+
+# Get Item ID
+function tinyShopGetItemID(item: item) :: number:
+	name of {_item} is not " ":
+		set {_id} to line 1 of lore of {_item}
+		replace all "&eItem ID: " with "" in {_id}
+		set {_id} to {_id} parsed as a integer
+		return {_id}
+	else:
+		return 0
+
+# Get Shop Item Page
+function openTinyShopItem(player: player, shop: string, id: integer, item: item, default_item: item):
+
+	{_id} is a integer:
+		{_id} is not 0:
+
+			# Prepare Item
+			set {_shop_item} to {_item}
+			delete lore of {_shop_item}
+
+			set {_shop_buy} to "%{_shop}%.data.%{_id}%.buy"
+			set {_shop_sell} to "%{_shop}%.data.%{_id}%.sell"
+
+			set {_shop_buy} to yaml value {_shop_buy} from "TinyShopGUI"
+			set {_shop_sell} to yaml value {_shop_sell} from "TinyShopGUI"
+
+			# Background 1
+			loop 9 times:
+				add {_default_item} to {_items::*}
+
+
+			# Background 2
+			add {_default_item} to {_items::*}
+
+			# The Item Page
+			add 32 red stained glass pane named "&c-32" to {_items::*}
+			add 16 red stained glass pane named "&c-16" to {_items::*}
+			add red stained glass pane named "&c-1" to {_items::*}
+
+			add {_shop_item} to {_items::*}
+
+			add green stained glass pane named "&a+1" to {_items::*}
+			add 16 green stained glass pane named "&a+16" to {_items::*}
+			add 32 green stained glass pane named "&a+32" to {_items::*}
+
+			# Background 2
+			add {_default_item} to {_items::*}
+				
+
+			# Background 3
+			loop 3 times:
+				add {_default_item} to {_items::*}
+
+			# Sell
+			set {_sell_button} to torch named "&cSell"
+			set custom model data of {_sell_button} to 9999997
+			add {_sell_button} to {_items::*}
+
+			# Background 3
+			add {_default_item} to {_items::*}
+
+			# Buy
+			set {_buy_button} to torch named "&aBuy"
+			set custom model data of {_buy_button} to 9999998
+			add {_buy_button} to {_items::*}
+
+			# Background 3
+			loop 3 times:
+				add {_default_item} to {_items::*}
+
+			# Balance
+			set {_head} to skull of {_player}
+			add {_head} named "&e%{_player}%" with lore "&6Money: &2%getBalanceText({_player})%" to {_items::*}
+
+			# Background
+			loop 3 times:
+				add {_default_item} to {_items::*}
+
+			# Data Item
+			set {_info_button} to monster spawner named "&fPAGE DATA"
+			set line 1 of lore of {_info_button} to "%{_shop}%"
+			set line 2 of lore of {_info_button} to "%{_id}%"
+			set line 3 of lore of {_info_button} to "%{_shop_buy}%"
+			set line 4 of lore of {_info_button} to "%{_shop_sell}%"
+			add {_info_button} to {_items::*}
+
+			# Background
+			loop 3 times:
+				add {_default_item} to {_items::*}
+
+			# Close Page
+			set {_close_button} to torch named "&7Close Page"
+			set custom model data of {_close_button} to 9999994
+			add {_close_button} to {_items::*}
+
+			# Insert GUI
+			insertIntoGUI({_player}, {_items::*}, 0)
+			TinyShopUpdatePrice({_player})
+
+# Default Values
+function TinyShopDefault(player: player, default_item: item):
+
+	# Balance
+	set {_head} to skull of {_player}
+	add {_head} named "&e%{_player}%" with lore "&6Money: &2%getBalanceText({_player})%" to {_items::*}
+
+	# Background
+	loop 6 times:
+		add {_default_item} to {_items::*}
+
+	# Close Menu
+	set {_back_button} to torch named "&7Back"
+	set custom model data of {_back_button} to 9999993
+
+	set {_close_button} to torch named "&7Close"
+	set custom model data of {_close_button} to 9999995
+	
+	add {_back_button} to {_items::*}
+	add {_close_button} to {_items::*}
+
+	insertIntoGUI({_player}, {_items::*}, 27)
+
+function TinyShopGetBuy(player: player) :: number:
+	set {_amount} to item amount of slot 13 of {_player}'s current inventory
+	set {_buy_value} to TinyShopGetBuyBase({_player}, {_amount})
+
+	return {_buy_value}
+
+function TinyShopGetSell(player: player) :: number:
+	set {_amount} to item amount of slot 13 of {_player}'s current inventory
+	set {_sell_value} to TinyShopGetSellBase({_player}, {_amount})
+
+	return {_sell_value}
+
+function TinyShopGetBuyBase(player: player, amount: number) :: number:
+	set {_buy_price} to line 3 of lore of slot 31 of {_player}'s current inventory parsed as a number
+	set {_buy_value} to {_buy_price} * {_amount}
+
+	return {_buy_value}
+
+function TinyShopGetSellBase(player: player, amount: number) :: number:
+	set {_sell_price} to line 4 of lore of slot 31 of {_player}'s current inventory parsed as a number
+	set {_sell_value} to {_sell_price} * {_amount}
+
+	return {_sell_value}
+
+
+function TinyShopUpdatePrice(player: player):
+
+	# Get Item Amount
+	set {_buy_value} to TinyShopGetBuy({_player})
+	set {_sell_value} to TinyShopGetSell({_player})
+
+	# Sell
+	set line 1 of lore of slot 21 of {_player}'s current inventory to "&cPrice: %{_sell_value}%"
+
+	# Buy
+	set line 1 of lore of slot 23 of {_player}'s current inventory to "&2Price: %{_buy_value}%"
+
+	# Info
+	set line 1 of lore of slot 27 of {_player}'s current inventory to "&6Money: &2%getBalanceText({_player})%"
+
+function TinyShopDefaultActions(player: player, item: item):
+
+	# Back to Menu
+	if name of {_item} is "&7Back":
+		close {_player}'s inventory
+		make {_player} execute command "/tinyshop"
+		stop
+
+	else if name of {_item} is "&7Close":
+		close {_player}'s inventory
+		stop
+
+	# Buy/Sell browser
+	else if name of {_item} is "&c-32":
+		set {_slot_amount} to item amount of slot 13 of {_player}'s current inventory - 32
+		if {_slot_amount} < 1:
+			set {_slot_amount} to 1
+
+		set item amount of slot 13 of {_player}'s current inventory to {_slot_amount}
+		TinyShopUpdatePrice({_player})
+
+	else if name of {_item} is "&c-16":
+		set {_slot_amount} to item amount of slot 13 of {_player}'s current inventory - 16
+		if {_slot_amount} < 1:
+			set {_slot_amount} to 1		
+		
+		set item amount of slot 13 of {_player}'s current inventory to {_slot_amount}
+		TinyShopUpdatePrice({_player})
+
+	else if name of {_item} is "&c-1":
+		set {_slot_amount} to item amount of slot 13 of {_player}'s current inventory - 1
+		if {_slot_amount} < 1:
+			set {_slot_amount} to 1
+		
+		set item amount of slot 13 of {_player}'s current inventory to {_slot_amount}
+		TinyShopUpdatePrice({_player})
+
+	else if name of {_item} is "&a+1":
+		set {_slot_amount} to item amount of slot 13 of {_player}'s current inventory + 1
+		if {_slot_amount} > 64:
+			set {_slot_amount} to 64
+		
+		set item amount of slot 13 of {_player}'s current inventory to {_slot_amount}
+		TinyShopUpdatePrice({_player})
+
+	else if name of {_item} is "&a+16":
+		set {_slot_amount} to item amount of slot 13 of {_player}'s current inventory + 16
+		if {_slot_amount} > 64:
+			set {_slot_amount} to 64
+		
+		set item amount of slot 13 of {_player}'s current inventory to {_slot_amount}
+		TinyShopUpdatePrice({_player})
+
+	else if name of {_item} is "&a+32":
+		set {_slot_amount} to item amount of slot 13 of {_player}'s current inventory + 32
+		if {_slot_amount} > 64:
+			set {_slot_amount} to 64
+		
+		set item amount of slot 13 of {_player}'s current inventory to {_slot_amount}
+		TinyShopUpdatePrice({_player})
+
+	# Sell
+	else if name of {_item} is "&cSell":
+
+		# Prepare Amount
+		set {_amount} to 0
+		set {_amount_remove} to item amount of slot 13 of {_player}'s current inventory
+
+		# Read Item
+		set {_custom_model} to custom model data of slot 13 of {_player}'s current inventory
+		loop {_player}'s inventory:
+			set {_custom_model_loop} to custom model data of loop-value-1
+			
+			# Confirm Item
+			{_custom_model} == {_custom_model_loop}:
+				type of slot 13 of {_player}'s current inventory is type of loop-value-1:
+					loop item amount of loop-value-1 times:
+
+						# Remove Items
+						if {_amount} < {_amount_remove}:
+							set {_amount} to {_amount} + 1
+							set item amount of loop-value-1 to item amount of loop-value-1 - 1
+
+		# Execute Sell
+		set {_price} to TinyShopGetSellBase({_player}, {_amount})
+		set {_result} to receiveBalance({_player}, {_price}, "TINYSHOP_%line 1 of lore of slot 31 of {_player}'s current inventory%_%line 2 of lore of slot 31 of {_player}'s current inventory%")
+		{_player}.sendMessage("{@prefix} &8» &fYou sold &c%item amount of slot 13 of {_player}'s current inventory%&f items to receive &c$%{_price}%&f. Tiny Thanks!")
+		{_player}.sendMessage("{@prefix} &8» &6Your new balance is &2%getBalanceText({_player})%&6.")
+
+		# Complete
+		TinyShopUpdatePrice({_player})
+
+	# Buy
+	else if name of {_item} is "&aBuy":
+
+		# Execute Buy
+		set {_amount} to TinyShopGetBuy({_player})
+		set {_result} to payBalance({_player}, {_amount}, "TINYSHOP_%line 1 of lore of slot 31 of {_player}'s current inventory%_%line 2 of lore of slot 31 of {_player}'s current inventory%")
+		
+		if {_result} is true:
+				
+			if {_player} can't hold slot 13 of {_player}'s current inventory:
+				drop slot 13 of {_player}'s current inventory at {_player}
+			else:
+				give slot 13 of {_player}'s current inventory to {_player}
+			
+			{_player}.sendMessage("{@prefix} &8» &fYou paid &a$%{_amount}%&f to receive &a%item amount of slot 13 of {_player}'s current inventory% items&f. Tiny Thanks!")
+			{_player}.sendMessage("{@prefix} &8» &6Your new balance is &2%getBalanceText({_player})%&6.")
+
+		else:
+			{_player}.sendMessage("{@prefix} &8» &cYou don't have enough balance.")
+
+		# Complete
+		TinyShopUpdatePrice({_player})

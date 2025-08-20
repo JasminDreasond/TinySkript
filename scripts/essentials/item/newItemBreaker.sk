@@ -1,0 +1,74 @@
+# repair player's item by 3
+# set item damage to 0
+
+on load:
+	send "&7[&bTiny Weapon Breaker&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Weapon Breaker&7] &8» &cDisabled" to console
+
+on item damage:
+	if event-item is air:
+		stop
+
+	if getItemLife(event-item) is smaller than 10:
+		cancel event
+
+on damage:
+	attacker is a player:
+		if attacker's tool is air:
+			increase damage by -90%
+			stop
+		else:
+			if  getItemLife(attacker's tool) is smaller than 10:
+				increase damage by -90%
+			else:
+				increase damage by 0%
+
+on block damage:
+	if event-player's held item isn't air:
+		if  getItemLife(event-player's tool) is smaller than 10:
+			cancel event
+
+on block fertilize:
+
+	if event-player's held item is bone meal:
+		stop
+
+	if event-player's held item isn't air:
+		if  getItemLife(event-player's tool) is smaller than 10:
+			cancel event
+
+on damage:
+	victim is a player:
+		
+		if getItemLife(victim's helmet) is smaller than 10:
+			if victim's helmet is air:
+				increase damage by 0%
+			else:
+				increase damage by 100%
+
+		if getItemLife(victim's chestplate) is smaller than 10:
+			if victim's chestplate is air:
+				increase damage by 0%
+			else:
+				increase damage by 100%
+
+		if getItemLife(victim's leggings) is smaller than 10:
+			if victim's leggings is air:
+				increase damage by 0%
+			else:
+				increase damage by 100%
+
+		if getItemLife(victim's boots) is smaller than 10:
+			if victim's boots is air:
+				increase damage by 0%
+			else:
+				increase damage by 100%
+
+		if getItemLife(victim's tool) is smaller than 10:
+
+			if victim is holding an air: # victim's tool is air:
+				increase damage by 0%
+			else:
+				increase damage by 100%

@@ -1,0 +1,79 @@
+# skript by aquiurbex :)
+# Edited version
+
+
+options:
+	logo: &d&l[TPA] &8▏
+
+on load:
+	send "{@logo} &8» &2Enabled" to console
+
+on unload:
+	send "{@logo} &8» &cDisabled" to console
+
+command /tpa [<player>]:
+	trigger:
+		if arg-1 is set:
+			if arg-1 is not player:
+				if arg-1 is online:
+					set {request.%arg-1's uuid%} to player
+					send "{@logo} &fYou sent a request for teleportation to &e%arg-1%&f. " to player
+					send "{@logo} &e%player% &rwant to teleport to you." to arg-1
+					send "&To &aaccept &fthe teleport request, Use &e/tpaccept  &7(&cBeware of accepting suspicious teleports&7)"  to arg-1
+					send "&fTo &creject &fthe teleport request, usa &e/tpdeny"  to arg-1
+					send "  &7(&cThe other user will be notified that you have rejected your request&7)"  to arg-1
+					set {requestpending.%arg-1's uuid%} to true
+				else:
+					send "{@logo} &fDisconnected player." to player
+			else:
+				send "{@logo} &fYou cannot teleport to yourself. Have you gone crazy?" to player
+		else: 
+			send "{@logo} &fSpecify the name of a player, please." to player
+		
+
+command /tpaccept:
+	trigger:
+		if {request.%player's uuid%} is set: 
+			send "{@logo} &e%player%&fYour request for teleportation has been accepted, wait 3 seconds and do not move." to {request.%player's uuid%}
+			set {tpa.cooldown::%{request.%player's uuid%}%} to true
+			send "{@logo} &fHas accepted the request." to player
+			wait 3 seconds
+			if {tpa.cooldown::%{request.%player's uuid%}%} is true:
+				teleportEffect(location of {request.%player's uuid%})
+				clear {tpa.cooldown::%{request.%player's uuid%}%}
+				set {back.%{request.%player's uuid%}'s uuid%} to {request.%player's uuid%}'s location
+				teleport {request.%player's uuid%} to player
+				teleportEffect(location of {request.%player's uuid%})
+				send "{@logo} &fYou have been teleported to &e%player%&f." to {request.%player's uuid%}
+			clear {tpa.cooldown::%{request.%player's uuid%}%}
+			clear {request.%player's uuid%}
+			set {requestpendingcount.%player's uuid%} to 0
+			set {requestpending.%player's uuid%} to false
+		else:
+			send "&cThe teleport request does not exist." to player
+
+
+on damage of player:
+  if {tpa.cooldown::%victim%} is set:
+    clear {tpa.cooldown::%victim%}
+    send "{@logo} &fYou received damage, teleportation canceled." to victim
+
+on player move:
+  if {tpa.cooldown::%player%} is set:
+    clear {tpa.cooldown::%player%}
+    send "{@logo} &fYou moved, teleport cancelled." to player
+
+
+
+command /tpdeny: 
+	trigger: 
+		if {request.%player's uuid%} is set: 
+			send "{@logo} &e%player% &fhas rejected your request." to {request.%player's uuid%}
+
+			send "{@logo} &fYou rejected the request for &e%{request.%player's uuid%}%&f." to player
+			set {requestpendingcount.%player's uuid%} to 0
+			clear {request.%player's uuid%}
+			set {requestpending.%player's uuid%} to false
+		else:
+			send "&cThe teleport request does not exist." to player
+

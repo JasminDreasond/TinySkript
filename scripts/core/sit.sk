@@ -1,0 +1,48 @@
+# https://www.spigotmc.org/resources/skript-sit.59595/
+
+options:
+	prefix: &7[&bTiny Sit&7]
+
+# Load Plugin
+on load:
+	send "{@prefix} &8» &2Enabled" to console
+
+on unload:
+	send "{@prefix} &8» &cDisabled" to console
+
+function playerSit(player: player):
+
+	set {_spawnloc} to location of {_player}
+	set y-coordinate of {_spawnloc} to y-coordinate of {_spawnloc}-0.9
+
+	spawn 1 pig at {_spawnloc}:
+		make entity silent
+		make entity invulnerable
+		set artificial intelligence of entity to false
+		entity.setVisible(false)
+		entity.setNoGravity(true)
+
+	set name of last spawned pig to "&eSeat"
+	set {_pig} to spawned pig
+	set health of {_pig} to 1
+
+	apply potion of invisibility without any particles to {_pig} for 9 days
+	make {_player} ride {_pig}
+
+on death:
+	name of victim is "&eSeat"
+	clear drops
+
+on vehicle exit:
+	name of vehicle of player is "&eSeat":
+
+		delete vehicle of player
+		set {_w} to world of player
+		set {_loc} to location of player
+		set y-coordinate of {_loc} to y-coordinate of {_loc}+0.6
+
+		wait a tick
+		
+		{_w} is player's world
+		teleport player to {_loc}
+ 

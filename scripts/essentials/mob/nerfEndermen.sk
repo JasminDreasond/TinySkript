@@ -1,0 +1,35 @@
+on load:
+	send "&7[&bTiny Enderman&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Enderman&7] &8» &cDisabled" to console
+
+#
+# this simple file prevents endermen from modifying the landscape.
+# You could also only restrict what they can/cannot take/place by adding a condition.
+#
+
+on enderman pickup:
+	cancel event
+
+on enderman place:
+	cancel event
+	kill the enderman # kills endermen which were still carrying something when this trigger file was activated
+
+on rightclick:
+	player has permission "enderpearl.use" or "enderpearl.*":
+		stop
+
+	if player's tool is an enderpearl:
+		cancel event
+
+on teleport:
+	teleport cause is ender pearl:
+		player has permission "enderpearl.teleport" or "enderpearl.*":
+			stop
+
+		cancel event
+
+#on projectile hit:
+	#if projectile is enderpearl:
+	#	cancel event

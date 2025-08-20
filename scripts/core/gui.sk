@@ -1,0 +1,70 @@
+options:
+
+	prefix: &7[&bTiny GUI Lib&7]
+
+# Load Plugin
+on load:
+	send "{@prefix} &8» &2Enabled" to console
+
+on unload:
+	send "{@prefix} &8» &cDisabled" to console
+
+function insertIntoGUI(player: player, items: items, slot: number=0):
+	set {_count} to {_slot}
+
+	loop {_items::*}:
+		if {_count} < {tinyshop::%{_player}'s uuid%::slots}:
+			set slot {_count} of {_player}'s current inventory to loop-value
+			set {_count} to {_count} + 1
+
+function createGUI(player: player, id: string, items: items, name: string, rows: integer=1):
+
+	set {tinyshop::%{_player}'s uuid%::name} to {_name}
+	set {tinyshop::%{_player}'s uuid%::rows} to {_rows}
+	set {tinyshop::%{_player}'s uuid%::id} to {_id}
+
+	set {tinyshop::%{_player}'s uuid%::slots} to 9 * {tinyshop::%{_player}'s uuid%::rows}
+
+	open chest inventory with {_rows} rows named {_name} to {_player}
+	wait 1 tick
+
+	insertIntoGUI({_player}, {_items::*}, 0)
+
+
+
+on inventory click:
+	clicked inventory isn't player's inventory:
+		{tinyshop::%player's uuid%::name} is set:
+			name of event-inventory is {tinyshop::%player's uuid%::name}:
+
+				set {_click_slot} to false
+
+				if index of event-slot is less than {tinyshop::%player's uuid%::slots}:
+					set {_click_slot} to true
+
+				{_click_slot} is true:
+					event-item is set:
+
+						cancel event
+						add event-player to {_placeFunctionArgs::*}
+						add event-item to {_placeFunctionArgs::*}
+						add event-inventory to {_placeFunctionArgs::*}
+						add index of event-slot to {_placeFunctionArgs::*}
+
+						set {_id} to {tinyshop::%player's uuid%::id}
+						replace all " " with "" in {_id}
+
+						set {_placeProxy::*} to createProxy("clickCustomGui%{_id}%", {_placeFunctionArgs::*})
+						{_placeProxy::1}.run()
+
+on inventory close:
+	clear {tinyshop::%player's uuid%::*}
+
+on join:
+	clear {tinyshop::%player's uuid%::*}
+
+on first join:
+	clear {tinyshop::%player's uuid%::*}
+
+on quit:
+	clear {tinyshop::%player's uuid%::*}

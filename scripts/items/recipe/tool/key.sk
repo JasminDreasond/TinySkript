@@ -1,0 +1,34 @@
+import:
+	org.bukkit.Bukkit
+	org.bukkit.inventory.ItemStack
+	org.bukkit.inventory.ShapedRecipe
+	org.bukkit.NamespacedKey
+	org.bukkit.Material
+
+on load:
+
+	# Item Data
+	wait 1 tick
+	set {_skript} to Bukkit.getServer().getPluginManager().getPlugin("Skript")
+	set {_item} to new ItemStack(Material.STICK)
+
+	{_item}.setAmount(3)
+	
+	set {_meta} to {_item}.getItemMeta()
+
+	{_meta}.setCustomModelData(1)
+	{_meta}.setDisplayName("Key")
+
+	{_item}.setItemMeta({_meta})
+
+	set {_key} to new NamespacedKey({_skript}, "tiny_key")
+	set {_recipe} to new ShapedRecipe({_key}, {_item})
+	
+	# Shape
+	{_recipe}.shape("G", "S")
+	{_recipe}.setIngredient("G", Material.GOLD_INGOT)
+	{_recipe}.setIngredient("S", Material.STICK)
+
+	# Add Recipe
+	Bukkit.addRecipe({_recipe})
+	send "&7[&bCustom Recipe - Tiny Key&7] &8» &2Enabled" to console

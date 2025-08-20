@@ -1,0 +1,44 @@
+import:
+	de.tr7zw.nbtapi.NBTItem
+	de.tr7zw.nbtapi.NBT
+
+options:
+
+	prefix: &7[&bTiny Item Convert&7]
+
+# Load Plugin
+on load:
+	send "{@prefix} &8» &2Enabled" to console
+
+on unload:
+	send "{@prefix} &8» &cDisabled" to console
+
+function ItemToObject(item: item) :: objects:
+
+	add {_item}.getType().name().replace("_", " ").toLowerCase() to {_data::*}
+	add item amount of {_item} to {_data::*}
+	if {_data::1} is not "air":
+
+		set {_NBT} to new NBTItem({_item})
+		set {_NBT_String} to {_NBT}.toString()
+		add {_NBT_String} to {_data::*}
+
+	return {_data::*}
+
+function ObjectToItem(data: objects) :: item:
+
+	if {_data::*} is set:
+		if {_data::1} is not "air":	
+			evaluate "set {_item} to %{_data::1}%"
+			set item amount of {_item} to {_data::2}
+
+			set {_NBT} to new NBTItem({_item})
+			{_NBT}.mergeCompound(NBT.parseNBT({_data::3}))
+
+			set {_result} to {_NBT}.getItem()
+
+			return {_result}
+		else:
+			return air
+	else:
+		return air

@@ -1,0 +1,196 @@
+# TinyChat
+# Skript made by JasminDreasond 
+# Fazer script para o usuário escolher distancia personalizada. Isso vai ser avisado no chat do jogo a cada mensagem.
+
+#-----------------------------------------------------------------------------------------------------
+options:
+
+	# info
+	range: 150
+	rangeText: "150"
+
+	Log Chat: true #or "false"
+	Admin Perm: chatdistance.mod
+	Deny Message: &cYou can not use this Command.
+	Prefix: &f[&aTiny Chat&f]&r
+
+#-----------------------------------------------------------------------------------------------------
+
+on load:
+	send "&7[&bTiny Chat&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Chat&7] &8» &cDisabled" to console
+
+command /friendchat:
+	trigger:
+		if {friendchat.%player's uuid%} is true:
+			clear {friendchat.%player's uuid%}
+			send "{@Prefix} Friend Chat &coff&f." to player	
+		else:
+			set {friendchat.%player's uuid%} to true
+			send "{@Prefix} Friend Chat &aon&f." to player	
+
+function clearChat(p: player, times: number):
+	loop {_times} times:
+		send "" to {_p}
+
+command /clearchat [<number>]:
+	trigger:
+		if arg-1 is a number:
+			if arg-1 is smaller than 100:
+				if arg-1 is bigger than 0:
+					clearChat(player, arg-1)
+				else:
+					clearChat(player, 1)
+			else:
+				clearChat(player, 100)
+		else:
+			clearChat(player, 100)
+
+on chat:
+
+	# Emoji
+	replace all "<3" with "&c❤&r" in message
+
+	replace all ":)" with "☺" in message
+	replace all ":(" with "☹" in message
+	replace all ":/" with "ツ" in message
+	
+	# URL
+	replace all "httpツ/" with "https://" in message
+	replace all "httpsツ/" with "https://" in message
+	replace all "http://" with "https://" in message
+
+	# Bad World Detector
+	set {_is_badword} to false
+	loop {chatfilter::words::*}:
+		if message contains loop-value:
+			set {_is_badword} to true
+			send "&cThis word is not allowed here!" to player
+			make console execute command "kick %player% &cThis word is not allowed here"
+
+	loop all players:
+		if message contains "@%loop-player%":
+			replace all "@%loop-player%" with "&b@%loop-player%&7" in the message
+
+	# Normal Message
+	{_is_badword} is false:
+
+		# Mute
+		if {mute.%player's uuid%} is "true":
+
+			cancel the event
+			send "{@Prefix} &cYou can not chat because you are muted!" to player
+			stop
+
+		# Free
+		else:
+		
+			# Cancel Default Event
+			cancel event
+
+			if {friendchat.%player's uuid%} is not true:
+
+				# Send Message
+				loop players in radius {@range} of player:
+
+					send "§f<&6%player%§f> &r%message%" to loop-player
+
+					if message contains "@%loop-player%":
+						play sound "entity.experience_orb.pickup" with volume 0.5 to the loop-player
+
+			else:
+
+				# Send Message
+				send "§a<&6%player%§a> &r%message%" to player
+				if message contains "@%player%":
+					play sound "entity.experience_orb.pickup" with volume 0.5 to the player
+
+				loop {friend.%uuid of player%::*}:
+
+					if loop-value is online:
+						send "§a<&6%player%§a> &r%message%" to loop-value
+
+						if message contains "@%loop-value%":
+							play sound "entity.experience_orb.pickup" with volume 0.5 to the loop-value	
+
+			# Log
+			if {@Log Chat} is true:
+				log "<%player%> %message%" to "Chat/messages.log"
+
+			# Effect
+			if message contains "&c❤":
+				play 4 heart offset of 0.5, 0.5, 0.5 speed 0.1 at location of player to all players
+				wait 1 tick
+				play 4 heart offset of 0.8, 0.8, 0.8 speed 0.1 at location of player to all players
+				wait 1 tick
+				play 4 heart offset of 1, 1, 1 speed 0.1 at location of player to all players
+				wait 2 tick
+				play 4 heart offset of 1.5, 1.5, 1.5 speed 0.1 at location of player to all players
+				wait 3 tick
+				play 4 heart offset of 2, 2, 2 speed 0.1 at location of player to all players
+
+
+	# Nope
+	else:
+		cancel the event
+		stop
+
+on quit:
+	clear {friendchat.%player's uuid%}
+
+on join:
+	clear {friendchat.%player's uuid%}
+	#send "{@Prefix} &7You can only talk with in &e%{@range}% blocks &7here OR you can use &e/shout &7every 5 minutes." to player
+	send "{@Prefix} &7You can only talk with in &e%{@rangeText}% blocks &7here. But if you use the friend chat, you can chat on a unlimited distance." to player	
+		
+command /modmute <player>:
+	permission: {@Admin Perm}
+	permission message: {@Deny Message}
+	trigger:
+		if arg-1 is set:
+			set {mute.%arg-1's uuid%} to "true"
+			send "{@Prefix} The player '%arg-1%' has been &cmuted!&r" to player
+
+
+command /modunmute <player>:
+	permission: {@Admin Perm}
+	permission message: {@Deny Message}
+	trigger:
+		if arg-1 is set:
+			set {mute.%arg-1's uuid%} to "false"
+			send "{@Prefix} The player '%arg-1%' has been &aunmuted!&r" to player
+
+command /chatfilter <text> [<text>]:
+	permission: skript.chatfilter.admin
+	trigger:
+		if arg-1 is "add":
+			if {chatfilter::words::*} contains arg-2:
+				send "{@Prefix} &cThis word is already part of blacklist" to player
+			else:
+				add arg-2 to {chatfilter::words::*}
+				send "{@Prefix} &aWord %arg-2% was added to blacklist" to player
+		else if arg-1 is "remove":
+			if {chatfilter::words::*} contains arg-2:
+				remove arg-2 from {chatfilter::words::*}
+				send "{@Prefix} &aWord %arg-2% was removed from blacklist" to player
+			else:
+				send "{@Prefix} &cThis word is not part of blacklist"
+		else if arg-1 is "list":
+			send {chatfilter::words::*} to player
+		else if arg-1 is "deleteall":
+			if arg-2 is set:
+				if arg-2 is "confirm":
+					delete {chatfilter::*}
+					send "{@Prefix} &aVariables was successfully deleted" to player
+				else:
+					set {_command} to "chatfilter"
+					send "{@Prefix} &cAre you sure? Type &6/%{_command}% deleteall confirm" to player
+			else:
+				set {_command} to "chatfilter"
+				send "{@Prefix} &cAre you sure? Type &6/%{_command}% deleteall confirm" to player
+
+#on chat tab complete of "/chatfilter":
+#	if player has permission "skript.chatfilter.admin":
+#		set (tab completions for position 1) to ("add","remove","list","deleteall")

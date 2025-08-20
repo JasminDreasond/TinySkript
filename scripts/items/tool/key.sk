@@ -1,0 +1,30 @@
+import:
+	de.tr7zw.nbtapi.NBTItem
+
+on load:
+	send "&7[&bTiny key&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny key&7] &8» &cDisabled" to console
+
+# Detect Craft
+command /mykey:
+	trigger:
+		player's held item is stick:
+			custom model data of player's held item is 1:
+			
+				set name of player's held item to "&a%player%'s Key"
+				set lore of player's held item to player's uuid
+				set {_NBT} to new NBTItem(player.getInventory().getItemInMainHand())
+				{_NBT}.setString("key_uuid", player's uuid)
+
+				set {_item} to {_NBT}.getItem()
+
+				set player's held item to {_item}
+
+				send "&7[&bTiny key&7] &aThese keys now belong to you." to player
+
+			else:
+				send "&7[&bTiny key&7] &cThis item is not a key!" to player
+		else:
+			send "&7[&bTiny key&7] &cThis item is not a key!" to player

@@ -1,0 +1,6 @@
+import:
+	org.bukkit.Bukkit
+	
+on load:
+	Bukkit.getServer().resetRecipes()
+	send "&7[&bCustom Recipe&7] &8» &cDisabled" to console

@@ -1,0 +1,400 @@
+# Edited version
+
+options:
+	houseLimit: 1 
+	errorPrefix: <red>!<reset> 
+	weatherPrefix: &7[&bWeather&7]&r
+	corePrefix: &7[&aTiny Core&7]&r
+	noPerm: &7[&aTiny Core&7]&r You can't do that!
+
+on load:
+	clear {allow_skip_time}
+	send "&7[&bTiny Essentials&7] &8» &2Enabled" to console
+
+on unload:
+	clear {allow_skip_time}
+	send "&7[&bTiny Essentials&7] &8» &cDisabled" to console
+
+# Night and Day
+command /day:
+	permission: doge.day
+	permission message: {@noPerm}
+	trigger:
+		set {allow_skip_time} to true
+		set time of the world "%event-world%" to 06:00
+		wait 1 tick
+		clear {allow_skip_time}
+		
+command /night:
+	permission: doge.day
+	permission message: {@noPerm}
+	trigger:
+		set {allow_skip_time} to true
+		set time of the world "%event-world%" to 24:00
+		wait 1 tick
+		clear {allow_skip_time}
+
+# Core commands
+command /msg <player> <text>:
+	description: Whisper another player
+	usage: /msg <player> <message>
+	aliases: /m
+	trigger:
+		send "&7[&cMSG&7] &aTO: %arg 1% &e->&c %arg 2%" to player
+		send "&7[&cMSG&7] &eFROM: %player% &e->&c %arg 2%" to arg 1
+
+command /spawnmob [<entitytype>] [<number=1>]:
+	permission: cat.spawnmob
+	permission message: {@noPerm}
+	trigger:
+		if arg-1 is set:
+			
+			set {_entity} to arg-1
+			set {_amount} to arg-2
+
+			set {_loc} to targeted block
+			set y-coordinate of {_loc} to  y-coordinate of {_loc} + 1
+
+			{_amount} > 50:
+				set {_amount} to 50
+
+			spawn {_amount} of {_entity} at {_loc}
+			send "{@corePrefix} &d%{_amount}% &b%{_entity}% spawned." to player
+
+		else:
+			send "{@corePrefix} You need to define a mob to be spawned." to player
+
+command /puddycheck <player> <text>:
+	description: Puddy check sender
+	usage: /puddycheck <player> <id>
+	trigger:
+		
+		if executor is console:
+			evaluate "send ""&7[&aPuddy Club&7] &eYou have received a request to verify your Minecraft account on the Puddy Club. <link:https://puddy.club/minecraft/verify?code=%arg 2%>&CClick here<reset>&e to confirm."" to player"
+			send "&7[&aPuddy Club&7] &eCode: %arg 2%" to player
+			send "&7[&aPuddy Club&7] &ehttps://puddy.club/minecraft/verify?code=%arg 2%" to player
+
+		else:
+			send "🍮" to player
+
+command /broadcast <string>:
+	usage: /broadcast <message>
+	permission: cat.broadcast
+	permission message: {@noPerm}
+	trigger:
+		broadcast "&7[&eBroadcast&7]&r > %arg-1%"
+
+command /fly:
+	description: Toggle flight
+	usage: /fly
+	executable by: players
+	permission: cat.fly
+	permission message: {@noPerm}
+	trigger:
+		If {fly.%player's uuid%} is not set:
+			Send "{@corePrefix} <light grey>Flight mode is now <light red>enabled<light grey>." to player
+			set player's flight mode to true
+			Set {fly.%player's uuid%} to true
+			Stop
+		Send "{@corePrefix} <light grey>Flight mode is now <light red>disabled<light grey>." to player
+		set player's flight mode to false
+		Delete {fly.%player's uuid%}
+		Stop
+
+command /feed [<player>]:
+	usage: /feed <player>
+	permission: cat.feed
+	permission message: {@noPerm}
+	trigger:
+		if arg-1 is set:
+			feed arg-1
+			send "{@corePrefix} &a%arg-1% have been fed" to player
+		else:
+			feed player
+			send "{@corePrefix} &aYou have been fed" to player
+
+command /heal [<player>]:
+	description: Heal player, or self
+	permission: cat.heal
+	usage: /msg <player>
+	permission message: {@noPerm}
+	trigger:
+		if arg-1 is set:
+			heal arg-1
+			send "{@corePrefix} &a%arg-1% have been healed!" to player
+		else:
+			heal player
+			send "{@corePrefix} &aYou have been healed!" to player
+
+
+
+command /gmc [<player>]:
+	description: Change gamemode for player to creative
+	permission: cat.gamemode
+	permission message: {@noPerm}
+	trigger:
+		if arg-1 is set:
+			set arg-1's flight mode to true
+			Set {fly.%arg-1's uuid%} to true
+			set gamemode of arg-1 to creative
+			send "{@corePrefix} &a%arg-1% are now in creative mode." to player
+		else:
+			set player's flight mode to true
+			Set {fly.%player's uuid%} to true
+			set gamemode of player to creative
+			send "{@corePrefix} &aYou are now in creative mode." to player
+
+command /gms [<player>]:
+	description: Change gamemode for player to survival
+	permission:	cat.gamemode
+	permission message: {@noPerm}
+	trigger:	
+		if arg-1 is set:
+			set arg-1's flight mode to false
+			Delete {fly.%arg-1's uuid%}
+			set gamemode of arg-1 to survival
+			send "{@corePrefix} &a%arg-1% are now in creative mode." to player
+		else:
+			set player's flight mode to false
+			Delete {fly.%player's uuid%}
+			set gamemode of player to survival
+			send "{@corePrefix} &aYou are now in survival mode." to player
+
+command /gma [<player>]:
+	description: Change gamemode for player to adventure
+	permission: cat.gamemode
+	permission message: {@noPerm}
+	trigger:
+		if arg-1 is set:	
+			set arg-1's flight mode to false
+			Delete {fly.%arg-1's uuid%}
+			set gamemode of arg-1 to adventure
+			send "{@corePrefix} &a%arg-1% are now in adventure mode." to player
+		else:	
+			set player's flight mode to false
+			Delete {fly.%player's uuid%}
+			set gamemode of player to adventure
+			send "{@corePrefix} &aYou are now in adventure mode." to player
+
+command /sethome [<string="default">]:
+	description: Sets your home
+	executable by: players
+	trigger:
+
+		if {homes::%uuid of player%::%arg-1%} isn't set:
+			if size of {homes::%uuid of player%::*} >= {@houseLimit}:
+				message "{@corePrefix} You reached limit! Try deleting some house!" to player
+			else:
+				set {homes::%uuid of player%::%arg-1%} to location of player
+				message "{@corePrefix} Set your home &a%arg-1%&r to %location of player%" to player
+				message "{@corePrefix} Now you have %{@houseLimit} - size of {homes::%uuid of player%::*}% left!" to player
+		else:
+			message "{@corePrefix} You already have name for those!" to player
+
+command /delhome [<string="default">]:
+	description: Deletes your home
+	executable by: players
+	trigger:
+		if {homes::%uuid of player%::%arg-1%} isn't set:
+			message "{@corePrefix} %{arg-1}% doesn't exist!" to player
+		else:
+			clear {homes::%uuid of player%::%arg-1%}
+			message "{@corePrefix} Deleted your home <green>%arg-1%<reset>" to player
+
+command /home [<string="default">]:
+	description: Teleports yourself to your home
+	executable by: players
+	trigger:
+		if {homes::%uuid of player%::%arg-1%} is not set:
+			message "{@corePrefix} You have not set your home &a%arg-1%&r yet!" to player
+		else:
+			teleportEffect(player's location)
+			teleport player to {homes::%uuid of player%::%arg-1%}
+			teleportEffect(location of player)
+
+# Other commands
+
+command /math <string> [<number>] [<number>]:
+	description: Math functions
+	trigger:
+		if arg-1 is "div":
+			if arg-2 is set:
+				if arg-3 is not set:
+					message "{@errorPrefix} You must set the second argument!" to player
+				else if arg-2 is 0:
+					message "{@corePrefix} You can't divide %{arg-2}% by zero!" to player
+				else:
+					message "{@corePrefix} Result: %arg-2 / arg-3%" to player
+		else if arg-1 is "mul":
+			if arg-2 is set:
+				if arg-3 is not set:
+					message "{@errorPrefix} You must set the second argument!" to player
+				else:
+					message "{@corePrefix} Result: %arg-2 * arg-3%" to player
+		else if arg-1 is "sum":
+			if arg-2 is set:
+				if arg-3 is not set:
+					message "{@errorPrefix} You must set the second argument!" to player
+				else:
+					message "{@corePrefix} Result: %arg-2 + arg-3%" to player
+		else if arg-1 is "min":
+			if arg-2 is set:
+				if arg-3 is not set:
+					message "{@errorPrefix} You must set the second argument!" to player
+				else:
+					message "{@corePrefix} Result: %arg-2 - arg-3%" to player
+		else if arg-1 is "help":
+			message "{@corePrefix} Options: sum, min, mul, div" to player
+		else:
+			message "{@corePrefix} Options not valid %arg-1%" to player
+			message "{@corePrefix} Options: sum, min, mul, div" to player
+
+# Hat Command
+command /hat:
+	executable by: players
+	trigger:
+		if player's tool is air:
+			if player's helmet is not air:
+				send "{@corePrefix} &7You already have an equipped item&c!" to player
+				stop
+			else:
+				send "{@corePrefix} &7You don't have any item at hand&c!" to player
+				stop
+		if player's helmet is not air:
+			send "{@corePrefix} &7You already have an equipped item&c!" to player
+			stop
+		send "{@corePrefix} &7You have equipped an item&c!" to player
+		set player's helmet to player's tool 
+		remove player's tool from player's inventory
+
+# Skull Command
+command /skull <offlineplayer>:
+	permission: doge.skull
+	permission message: {@noPerm}
+	trigger:
+		send "{@corePrefix} &aYou have received the head of the player &c%arg-1%." to player
+		give player 1 of arg-1's skull
+
+# Speed Command
+command /speed [<number>] [<text>] [<player>]:
+	permission: cat.speed
+	permission message: {@noPerm}
+	trigger:
+		if arg 1 is not set:
+			send "Change your speed limits." to player
+			send "/speed <speed> [type] [player]" to player
+			stop
+		if arg 2 is set:
+			if arg 2 is "walk":
+				if arg 3 is set:
+					if arg 1 is greater than 10:
+						send "{@corePrefix} &6Set &cwalking &6speed to &c10 &6for %arg 3's prefix%&c%arg 3%&6." to player
+						set arg 3's walking speed to 0.2 * 10
+						stop
+					send "{@corePrefix} &6Set &cwalking &6speed to &c%arg 1% &6for %arg 3's prefix%&c%arg 3%&6." to player
+					set arg 3's walking speed to 0.2 * arg 1
+					stop
+				if arg 1 is greater than 10:
+					send "{@corePrefix} &6Set &cwalking &6speed to &c10 &6for %player's prefix%&c%player%&6." to player
+					set player's walking speed to 0.2 * 10
+					stop
+				set player's walking speed to 0.2 * arg 1
+				send "{@corePrefix} &6Set &cwalking &6speed to &c%arg 1% &6for %player's prefix%&c%player%&6."
+				stop
+			if arg 2 is "walking":
+				if arg 3 is set:
+					if arg 1 is greater than 10:
+						send "{@corePrefix} &6Set &cwalking &6speed to &c10 &6for %arg 3's prefix%&c%arg 3%&6." to player
+						set arg 3's walking speed to 0.2 * 10
+						stop
+					send "{@corePrefix} &6Set &cwalking &6speed to &c%arg 1% &6for %arg 3's prefix%&c%arg 3%&6." to player
+					set arg 3's walking speed to 0.2 * arg 1
+					stop
+				if arg 1 is greater than 10:
+					send "{@corePrefix} &6Set &cwalking &6speed to &c10 &6for %player's prefix%&c%player%&6." to player
+					set player's walking speed to 0.2 * 10
+					stop
+				set player's walking speed to 0.2 * arg 1
+				send "{@corePrefix} &6Set &cwalking &6speed to &c%arg 1% &6for %player's prefix%&c%player%&6."
+				stop
+			if arg 2 is "fly":
+				if arg 3 is set:
+					if arg 1 is greater than 10:
+						send "{@corePrefix} &6Set &cflying &6speed to &c10 &6for %arg 3's prefix%&c%arg 3%&6." to player
+						set arg 3's flyingspeed to 0.2 * 10
+						stop
+					send "{@corePrefix} &6Set &cflying &6speed to &c%arg 1% &6for %arg 3's prefix%&c%arg 3%&6." to player
+					set arg 3's flying speed to 0.1 * arg 1
+					stop
+				if arg 1 is greater than 10:
+					send "{@corePrefix} &6Set &cflying &6speed to &c10 &6for %player's prefix%&c%player%&6." to player
+					set player's flying speed to 0.1 * 10
+					stop
+				set player's flying speed to 0.1 * arg 1
+				send "{@corePrefix} &6Set &cflying &6speed to &c%arg 1% &6for %player's prefix%&c%player%&6." to player
+				stop
+			if arg 2 is "flying":
+				if arg 3 is set:
+					if arg 1 is greater than 10:
+						send "{@corePrefix} &6Set &cflying &6speed to &c10 &6for %arg 3's prefix%&c%arg 3%&6." to player
+						set arg 3's flyingspeed to 0.2 * 10
+						stop
+					set arg 3's flying speed to 0.1 * arg 1
+					send "{@corePrefix} &6Set &cflying &6speed to &c%arg 1% &6for %arg 3's prefix%&c%arg 3%&6." to player
+					stop
+				if arg 1 is greater than 10:
+					send "{@corePrefix} &6Set &cflying &6speed to &c10 &6for %player's prefix%&c%player%&6." to player
+					set player's flying speed to 0.1 * 10
+					stop
+				set player's flying speed to 0.1 * arg 1
+				send "{@corePrefix} &6Set &cflying &6speed to &c%arg 1% &6for %player's prefix%&c%player%&6." to player
+				stop
+		if arg 2 is not set:
+			if player is flying:
+				if arg 1 is greater than 10:
+					send "{@corePrefix} &6Set &cflying &6speed to &c10 &6for %player's prefix%&c%player%&6." to player
+					set player's flying speed to 0.1 * 10
+					stop
+				set player's flying speed to 0.1 * arg 1
+				send "{@corePrefix} &6Set &cflying &6speed to &c%arg 1% &6for %player's prefix%&c%player%&6." to player
+				stop
+			if arg 1 is greater than 10:
+				send "{@corePrefix} &6Set &cwalking &6speed to &c10 &6for %player's prefix%&c%player%&6." to player
+				set player's walking speed to 0.2 * 10
+				stop
+			set player's walking speed to 0.2 * arg 1
+			send "{@corePrefix} &6Set &cwalking &6speed to &c%arg 1% &6for %player's prefix%&c%player%&6." to player
+
+# TP
+command /tp [<player>] [<player>]:
+	permission: doge.tp
+	permission message: {@noPerm}
+	trigger:
+		if arg 1 is set:
+			if arg 2 is set:
+				teleportEffect(location of arg 1)
+				set {back.%player's uuid%} to player's location
+				teleport arg-1 to arg-2
+				teleportEffect(location of arg 1)
+				send "{@corePrefix} &r&bTeleported &4%arg 1% &ato &4%arg 2%" to player
+			else:
+				teleportEffect(location of player)
+				set {back.%player's uuid%} to player's location
+				teleport player to arg-1
+				teleportEffect(location of player)
+				send "{@corePrefix} &r&bTeleported to &4%arg 1%" to player
+		else:
+			send "{@corePrefix} &r&cUsage: /tp [player]" to player
+
+# Weather messages!
+on weather change to sunny:
+	loop all players:
+		sendActionBar(loop-player, "{@weatherPrefix} It's sunny outside!")
+
+on weather change to rain:
+	loop all players:
+		sendActionBar(loop-player, "{@weatherPrefix} It's raining!")
+
+on weather change to thunderstorm:
+	loop all players:
+		sendActionBar(loop-player, "{@weatherPrefix} Dharr!!")

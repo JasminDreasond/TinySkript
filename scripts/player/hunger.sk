@@ -1,0 +1,34 @@
+# Options
+options:
+	FolderName-1: tinyTheSims
+
+#command /hunger [<text>] [<text>]
+#    trigger:
+#        if arg 1 is "speed":
+#            set {hunger.speed} to arg 2
+#            message "Hunger speed set to %arg 2% on this server."
+#            stop
+ 
+#Every second:
+#    Loop all players:
+#        Set {foodlvl.%loop-player%} to 10 - {hunger.speed}
+#        set the loop-player's food level to {_foodlvl}
+
+on load:
+	send "&7[&bTiny Hunger&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Hunger&7] &8» &cDisabled" to console
+
+# Control Hunger
+on hunger meter change:
+	load "plugins/{@FolderName-1}/hunger/user_%player's uuid%.yml" as "ts-hunger-%player's uuid%"
+	set yaml value "food" in "ts-hunger-%player's uuid%" to player's food level
+	save yaml "ts-hunger-%player's uuid%"
+	unload yaml "ts-hunger-%player's uuid%"
+
+on respawn:
+	wait 1 ticks
+	load "plugins/{@FolderName-1}/hunger/user_%player's uuid%.yml" as "ts-hunger-%player's uuid%"
+	set player's food level to yaml value "food" in "ts-hunger-%player's uuid%"
+	unload yaml "ts-hunger-%player's uuid%"

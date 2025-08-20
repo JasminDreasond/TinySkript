@@ -1,0 +1,51 @@
+# Edited Version
+
+# Command to mark a player as a cheater
+command /cheater [<player>]:
+	permission: anticheater.use
+	trigger:
+		set {stop.%arg-1's uuid%} to true
+		arg-1.sendTitle("&4&lNo cheating! No cheating! No cheating!", "&cYou got caught cheating!")
+		play sound "ENDERDRAGON_DEATH" to player
+
+# Command to stop marking a cheater
+command /stopcheater [<offline player>]:
+	permission: anticheater.use
+	trigger:
+		clear {stop.%arg-1's uuid%}
+
+# Command to set the teleport cage for cheaters
+command /setcage:
+	permission: anticheater.setcage
+	trigger:
+		set {cheatercage} to player's location
+		send "&aCheater cage location set!"
+
+# Event triggered when a cheater moves
+on any move:
+	if {stop.%player's uuid%} is true:
+		wait 3 ticks
+		# Funny titles and action bar
+		player.sendTitle("&4&lCHEATER ALERT!", "&cCaught red-handed!")
+		sendActionBar(player, "&4&lCheater Cheater Chicken Eater!")
+		send "&cSTOP CHEATING OR FACE THE WRATH OF THE END DRAGON!" to player
+		
+		# Particles and sounds
+		execute console command "execute %player% ~ ~ ~ particle mobappearance ~ ~ ~ 0 0 0 1"
+		play sound "ENDERDRAGON_DEATH" to player
+		play sound "ENDERDRAGON_GROWL" to player
+		
+		# Nausea effect and teleport to cage
+		execute console command "/effect %player% minecraft:nausea"
+		teleport player to {cheatercage}
+		wait 5 seconds
+		wait 20 ticks
+
+on join:
+
+	if {stop.%player%} is true:
+		set {stop.%player%} to false
+
+on any move:
+	if {stop.%player%} is true:
+		cancel event

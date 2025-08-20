@@ -1,0 +1,16 @@
+#on preparing craft of torch:
+
+on load:
+	send "&7[&bTiny Crypto - BNB&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Crypto - BNB&7] &8» &cDisabled" to console
+
+on pick up:
+	check_crypto_item(player, 2, "bnb", "BNB")
+
+on swap hand items:
+	check_crypto_item(player, 2, "bnb", "BNB")
+
+on player held item change:
+	check_crypto_item(player, 2, "bnb", "BNB")

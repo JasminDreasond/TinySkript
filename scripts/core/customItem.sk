@@ -1,0 +1,169 @@
+# https://docs.coreprotect.net/api/
+# Options
+options:
+	FolderName-1: TinyCustomBlocks
+
+# Editor
+function registerCustomBlock(id: number, type: number, name: string):
+	load "plugins/{@FolderName-1}/%{_id}%.yml" as "tinyCBlock%{_id}%"
+	set yaml value "type" in "tinyCBlock%{_id}%" to {_type}
+	set yaml value "name" in "tinyCBlock%{_id}%" to {_name}
+	save yaml "tinyCBlock%{_id}%"
+
+function placeSoundCustomBlock(id: number, name: string, volume: number):
+	set yaml value "placeSound" in "tinyCBlock%{_id}%" to {_name}
+	set yaml value "placeSoundVolume" in "tinyCBlock%{_id}%" to {_volume}
+	save yaml "tinyCBlock%{_id}%"
+
+function effectRadiusCustomBlock(id: number, radius: number):
+	set yaml value "effectRadius" in "tinyCBlock%{_id}%" to {_radius}
+	save yaml "tinyCBlock%{_id}%"
+
+function unregisterCustomBlock(id: number):
+	delete yaml "tinyCBlock%{_id}%"
+	unload yaml "tinyCBlock%{_id}%"
+
+# Check Id
+function checkIdCustomBlock(item: item) :: number:
+	set {_id} to custom model data of {_item}
+	custom model data of {_item} is not 0:
+		yaml path "type" in "tinyCBlock%{_id}%" has value:
+			return {_id}
+		else:
+			return 0
+	else:
+		return 0
+
+# Check Location
+function checkLocationCustomBlock(player: location, block: location) :: boolean:
+	if distance between {_player} and {_block} > 0.65:
+		set {_loc} to {_block}
+		set y-coordinate of {_loc} to  y-coordinate of {_loc} - 1
+		if distance between {_player} and {_loc} > 1.35:
+			return true
+		else:
+			return false
+	else:
+		return false
+
+# Block Builder
+function spawnCustomBlock(id: number, block: location):
+
+	# Prepare Item
+	set {_custom_item} to item frame
+	set custom model data of {_custom_item} to {_id}
+
+	# Insert Block
+	spawn item frame at {_block}:
+		set item of entity to {_custom_item}
+		make entity invulnerable
+		make entity silent
+		entity.setFixed(true)
+		entity.setVisible(false)
+
+function insertBaseCustomBlock(id: number, block: location):
+
+	# Barrier Mode
+	yaml value "type" in "tinyCBlock%{_id}%" is 0:
+		set block at {_block} to barrier
+
+function spawnInsertCustomBlock(id: number, block: location):
+	spawnCustomBlock({_id}, {_block})
+	insertBaseCustomBlock({_id}, {_block})
+
+# Get Block Data
+function verifyDataCustomBlock(id: number, block: entity) :: boolean:
+	yaml path "type" in "tinyCBlock%{_id}%" has value:
+		yaml value "type" in "tinyCBlock%{_id}%" is 0:
+			{_block} is item frame:
+				{_id} is not 0:
+					return true
+				else:
+					return false
+			else:
+				return false
+		else:
+			return false
+	else:
+		return false
+
+function getDataCustomBlock(select_block: block, player: player) :: objects:
+
+	# Entity
+	loop entities in radius 0.47 of {_select_block}:
+		loop-value is item frame:
+			set {_entity} to loop-value
+
+	# ID
+	set {_id} to custom model data of item of {_entity}
+	add {_id} to {_custom_block::*}
+	{_id} is not 0:
+	
+		# Position
+		set {_loc} to position of {_entity}
+
+		# Verification
+		set {_verified} to verifyDataCustomBlock({_id}, {_entity})
+
+		# Add Data
+		add {_verified} to {_custom_block::*}
+		add location of {_select_block} to {_custom_block::*}
+		add {_entity} to {_custom_block::*}
+		add {_player} to {_custom_block::*}
+		
+	# Complete
+	return {_custom_block::*}
+
+# ########################################################
+
+# Event
+on place item frame:
+	set {_id} to checkIdCustomBlock(event-player's held item)
+	{_id} is not 0:
+
+		# Stop Normal Event
+		cancel event
+
+		# Start Custom Event
+		set {_locationOk} to checkLocationCustomBlock(event-player's location, event-location)
+		{_locationOk} is true:
+
+			# Insert Custom Block
+			spawnInsertCustomBlock({_id}, event-location)
+
+			# Remove Item
+			if gamemode of event-player is not creative:
+				set item amount of event-player's held item to item amount of event-player's held item - 1
+
+			# Place Proxy
+			add event-location to {_placeFunctionArgs::*}
+			add event-player to {_placeFunctionArgs::*}
+
+			set {_placeProxy::*} to createProxy("customBlock%{_id}%Place", {_placeFunctionArgs::*})
+			{_placeProxy::1}.run()
+
+			# Play Sound
+			play sound yaml value "placeSound" in "tinyCBlock%{_id}%" at volume yaml value "placeSoundVolume" in "tinyCBlock%{_id}%" at event-location to all players
+			
+			# Place Loop Proxy
+			add event-location to {_placeFunctionPlayerArgs::*}
+			add event-player to {_placeFunctionPlayerArgs::*}
+
+			set {_placeProxyPlayer::*} to createProxy("customBlock%{_id}%PlacePlayer", {_placeFunctionPlayerArgs::*})
+			{_placeProxyPlayer::1}.run()
+
+on block damage:
+	set {_custom_block::*} to getDataCustomBlock(event-block, event-player)
+	{_custom_block::2} is true:
+		
+		cancel event
+		set {_proxy::*} to createProxy("customBlock%{_custom_block::1}%Damage", {_custom_block::*})
+		{_proxy::1}.run()
+
+on right click:
+	set {_custom_block::*} to getDataCustomBlock(event-block, event-player)
+	{_custom_block::2} is true:
+		
+		set {_proxy::*} to createProxy("customBlock%{_custom_block::1}%RightClick", {_custom_block::*})
+		{_proxy::1}.run()
+		

@@ -1,0 +1,113 @@
+import:
+	java.lang.System
+	org.bukkit.Bukkit
+
+# Options
+options:
+	FolderName-1: ForcePack
+	FolderName-2: TinyServerData
+
+function updateUserList():
+
+	wait 1 tick
+
+	set yaml value "online" from "TinyServerData" to Bukkit.getServer().getOnlinePlayers().size()
+
+	delete yaml list "players" from "TinyServerData"
+	loop all players:
+		clear {_players::*}
+		add "%loop-player%" to {_players::*}
+		add loop-player's ip to {_players::*}
+		set yaml list "players.%loop-player's uuid%" from "TinyServerData" to {_players::*}
+
+	save yaml "TinyServerData"
+
+function userJoin(player: player):
+	
+	load "plugins/{@FolderName-2}/user/data_%{_player}'s uuid%.yml" as "user_data_%{_player}'s uuid%"
+	set yaml value "ip" from "user_data_%{_player}'s uuid%" to {_player}'s ip
+	save yaml "user_data_%{_player}'s uuid%"
+	unload yaml "user_data_%{_player}'s uuid%"
+
+	wait 1 tick
+	load "plugins/{@FolderName-1}/config.yml" as "ForcePack"
+	{_player}.setResourcePack(yaml value "Server.ResourcePack.url" in "ForcePack", yaml value "Server.ResourcePack.hash" in "ForcePack", true)
+	unload yaml "ForcePack"
+
+on load:
+	send "&7[&bTiny Join&7] &8» &2Enabled" to console
+	updateUserList()
+
+on unload:
+	send "&7[&bTiny Join&7] &8» &cDisabled" to console
+
+on join:
+
+	clear {afk_use.%player's uuid%}
+	clear {afk.%player's uuid%}
+	set player's flight mode to false
+	Delete {fly.%player's uuid%}
+	set join message to ""
+
+	userJoin(player)
+	updateUserList()
+
+	player.sendTitle("&b&lTiny Welcome Back", "Your boops are waiting for you!")
+
+on first join:
+
+	clear {afk_use.%player's uuid%}
+	clear {afk.%player's uuid%}
+	userJoin(player)
+	updateUserList()
+
+	player.sendTitle("&b&lTiny Welcome &6&l%player%&b&l", "Your boops are waiting for you!")
+
+on quit:
+
+	clear {afk_use.%player's uuid%}
+	clear {afk.%player's uuid%}
+	clear {back.%player's uuid%}
+	set leave message to ""
+	updateUserList()
+
+command /forcepack reload:
+	permission: ForcePack.reload
+	permission message: &cYou don't have enough permissions for that!
+	description: Reload Force Pack
+	trigger:
+
+		load "plugins/{@FolderName-1}/config.yml" as "ForcePack"
+		loop all players:
+			loop-player.setResourcePack(yaml value "Server.ResourcePack.url" in "ForcePack", yaml value "Server.ResourcePack.hash" in "ForcePack", true)
+		unload yaml "ForcePack"
+
+		player.sendMessage("Reload ForcePack complete!")
+
+on break:
+	set {afk_use.%player's uuid%} to true
+	{afk.%player's uuid%} = System.currentTimeMillis()
+
+on build:
+	set {afk_use.%player's uuid%} to true
+	{afk.%player's uuid%} = System.currentTimeMillis()
+
+on player move:
+	set {afk_use.%player's uuid%} to true
+	{afk.%player's uuid%} = System.currentTimeMillis()
+
+on flight toggle:
+	set {afk_use.%player's uuid%} to true
+	{afk.%player's uuid%} = System.currentTimeMillis()
+
+on click:
+	set {afk_use.%player's uuid%} to true
+	{afk.%player's uuid%} = System.currentTimeMillis()
+
+on sneak toggle:
+	set {afk_use.%player's uuid%} to true
+	{afk.%player's uuid%} = System.currentTimeMillis()
+
+on inventory click:
+	set {afk_use.%player's uuid%} to true
+	{afk.%player's uuid%} = System.currentTimeMillis()

@@ -1,0 +1,10 @@
+on load:
+	send "&7[&bTiny Anti Drop&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Anti Drop&7] &8» &cDisabled" to console
+
+on death of player:
+    if victim have a blaze rod named "Mentőrúd":
+        remove 1 blaze rod named "Mentőrúd" from the victim
+        remove drops from the drops

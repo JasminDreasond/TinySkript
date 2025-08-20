@@ -1,0 +1,16 @@
+on load:
+	send "&7[&bTiny Dragon Head&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Dragon Head&7] &8» &cDisabled" to console
+
+on target:
+	target is a player:
+		if target is wearing a ender dragon head:
+			cancel event
+
+on item damage:
+	if player is wearing a ender dragon head:
+		if distance between target and player is less than 5:
+			if target is not player:
+				set artificial intelligence of target entity to false

@@ -1,0 +1,18 @@
+import:
+
+    org.bukkit.event.entity.EntityInteractEvent
+    org.bukkit.event.player.PlayerInteractEvent
+
+on load:
+	send "&7[&bTiny Farm Protect&7] &8» &2Enabled" to console
+
+on unload:
+	send "&7[&bTiny Farm Protect&7] &8» &cDisabled" to console
+
+on PlayerInteractEvent:
+
+    set {_action} to event.getAction()
+    set {_block} to event.getClickedBlock().getType()
+    "%{_action}%" is "PHYSICAL":
+        "%{_block}%" is "FARMLAND":
+            event.setCancelled(true)

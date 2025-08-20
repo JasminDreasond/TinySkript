@@ -1,0 +1,43 @@
+# Set Custom Block
+#break event-block naturally using event-player's held item
+#set block at location of event-block to air
+
+# Load Data
+on load:
+
+	wait 1 tick
+	send "&7[&bTiny Custom Block - Lucky Box&7] &8» &2Enabled" to console
+
+    # ID 1 | Type Item Frame | Name | Block Base: Barrie
+	registerCustomBlock(1, 0, "Lucky Box")
+
+    # ID 1 | Effect Radius
+	effectRadiusCustomBlock(1, 15)
+
+    # ID 1 | Sound ID | Volume
+	placeSoundCustomBlock(1, "minecraft:block.stone.place", 1)
+
+on unload:
+	send "&7[&bTTiny Custom Block - Lucky Box&7] &8» &cDisabled" to console
+	unregisterCustomBlock(1)
+
+# Place Block Effects
+function customBlock1Place(location: location, player: player):
+	launch ball large coloured red, purple and white fading to light green and black at {_location} with duration 1
+
+function customBlock1PlacePlayer(location: location, player: player):
+
+	play 100 cloud offset of 0, 0, 0 speed 0.1 at {_location} to all players
+	play sound "minecraft:entity.wither.spawn" at volume 1 at {_location} to all players
+
+	wait 1 tick
+	play sound "minecraft:entity.firework_rocket.large_blast" at volume 1 at {_location} to all players
+
+# Block Damage
+function customBlock1Damage(id: number, verified: boolean, loc: location, entity: entity, player: player):
+	play 100 cloud offset of 0, 0, 0 speed 0.1 at {_loc} to all players
+	play sound "minecraft:entity.wither.spawn" at volume 1 at {_loc} to all players
+
+# Right Click
+function customBlock1RightClick(id: number, verified: boolean, loc: location, entity: entity, player: player):
+	{_player}.sendMessage("mio")

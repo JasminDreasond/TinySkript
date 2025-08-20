@@ -1,0 +1,6 @@
+import:
+	net.md_5.bungee.api.ChatMessageType
+	net.md_5.bungee.api.chat.TextComponent
+
+function sendActionBar(player: player, text: string):
+    {_player}.sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText({_text}))

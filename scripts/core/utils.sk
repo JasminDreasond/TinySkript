@@ -1,0 +1,16 @@
+function reversed(list: objects) :: objects:
+	loop size of {_list::*} times:
+		set {_index} to size of {_list::*} - loop-number - 1
+		add {_list::%{_index}%} to {_reversed::*}
+	return {_reversed::*}
+
+function getPlayerLevel(player: player) :: number:
+	set {_result} to "%{_player}.getLevel()%" parsed as number
+	return {_result}
+
+function getPlayerExp(player: player) :: number:
+	set {_result} to "%{_player}.getExp()%" parsed as number
+	return {_result}
+
+function getItemLife(item: item) :: number:
+	return max durability of {_item} - damage of {_item} - 1

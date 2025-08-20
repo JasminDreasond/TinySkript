@@ -1,0 +1,16 @@
+options:
+	motd: &f[&6PUDDY CLUB&f] &8» &7Your favorite survival server%nl%    &7SERVER VERSION: &c1.1.2
+
+# Load Plugin
+on load:
+	send "&7[&bTiny MOTD&7] &8» &2Enabled" to console
+	
+	wait 1 tick
+	set yaml value "motd" from "TinyServerData" to "{@motd}"
+	save yaml "TinyServerData"
+
+on unload:
+	send "&7[&bTiny MOTD&7] &8» &cDisabled" to console
+
+on server list ping:
+	set the motd to "{@motd}"
